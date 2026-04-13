@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -51,7 +52,12 @@ func Open(dbPath string) (*DB, error) {
 	}
 
 	// Migrate: add summary column if missing (for existing DBs).
-	sqlDB.Exec("ALTER TABLE sessions ADD COLUMN summary TEXT")
+	if _, err := sqlDB.Exec("ALTER TABLE sessions ADD COLUMN summary TEXT"); err != nil {
+		if !strings.Contains(err.Error(), "duplicate column name") {
+			sqlDB.Close()
+			return nil, fmt.Errorf("alter table add summary column: %w", err)
+		}
+	}
 
 	return &DB{sqlDB}, nil
 }
