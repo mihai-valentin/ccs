@@ -72,6 +72,77 @@ func (m Model) viewDetail() string {
 	return detailBorderStyle.Width(boxWidth).Render(content)
 }
 
+// viewSummaryOverlay renders the full summary as a centered overlay.
+func (m Model) viewSummaryOverlay() string {
+	if len(m.filteredSessions) == 0 {
+		return ""
+	}
+	s := m.filteredSessions[m.selectedIndex]
+	name := sessionDisplayName(s)
+
+	maxWidth := m.width - 8
+	if maxWidth < 40 {
+		maxWidth = 40
+	}
+	if maxWidth > 100 {
+		maxWidth = 100
+	}
+
+	title := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(colorPrimary).
+		Render("Summary: " + name)
+
+	body := s.Summary
+	if body == "" {
+		body = "No summary available."
+	}
+
+	// Word-wrap the summary text
+	body = wordWrap(body, maxWidth-4)
+
+	footer := lipgloss.NewStyle().
+		Foreground(colorMuted).
+		Render("\n[s/Esc] Close")
+
+	content := title + "\n\n" + body + footer
+
+	box := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(colorPrimary).
+		Padding(1, 2).
+		Width(maxWidth).
+		Render(content)
+
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, box)
+}
+
+// wordWrap wraps text to the given width at word boundaries.
+func wordWrap(text string, width int) string {
+	if width <= 0 {
+		return text
+	}
+	var lines []string
+	for _, paragraph := range strings.Split(text, "\n") {
+		words := strings.Fields(paragraph)
+		if len(words) == 0 {
+			lines = append(lines, "")
+			continue
+		}
+		line := words[0]
+		for _, w := range words[1:] {
+			if len(line)+1+len(w) > width {
+				lines = append(lines, line)
+				line = w
+			} else {
+				line += " " + w
+			}
+		}
+		lines = append(lines, line)
+	}
+	return strings.Join(lines, "\n")
+}
+
 // viewDeleteConfirm renders the inline delete confirmation prompt.
 func (m Model) viewDeleteConfirm() string {
 	if len(m.filteredSessions) == 0 {

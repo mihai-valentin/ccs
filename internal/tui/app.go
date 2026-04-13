@@ -20,6 +20,7 @@ const (
 	ModeTag
 	ModeDeleteConfirm
 	ModeHelp
+	ModeSummary
 )
 
 // Model is the main bubbletea model for the TUI.
@@ -124,6 +125,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.updateDeleteConfirm(msg)
 		case ModeHelp:
 			return m.updateHelp(msg)
+		case ModeSummary:
+			return m.updateSummary(msg)
 		}
 	}
 	return m, nil
@@ -161,6 +164,10 @@ func (m Model) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 	case "tab":
 		m.cycleProjectFilter()
+	case "s":
+		if len(m.filteredSessions) > 0 && m.filteredSessions[m.selectedIndex].Summary != "" {
+			m.mode = ModeSummary
+		}
 	case "?":
 		m.mode = ModeHelp
 	}
@@ -268,6 +275,14 @@ func (m Model) updateDeleteConfirm(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m Model) updateSummary(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "s", "esc", "q":
+		m.mode = ModeNormal
+	}
+	return m, nil
+}
+
 func (m Model) updateHelp(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "?", "esc", "q":
@@ -284,6 +299,10 @@ func (m Model) View() string {
 
 	if m.mode == ModeHelp {
 		return m.viewHelp(m.width, m.height)
+	}
+
+	if m.mode == ModeSummary {
+		return m.viewSummaryOverlay()
 	}
 
 	var sections []string
@@ -342,6 +361,7 @@ func (m Model) viewTopBar() string {
 func (m Model) viewFooter() string {
 	keys := []struct{ key, desc string }{
 		{"Enter", "Open"},
+		{"s", "Summary"},
 		{"t", "Tag"},
 		{"d", "Delete"},
 		{"/", "Search"},

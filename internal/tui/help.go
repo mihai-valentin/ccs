@@ -15,6 +15,7 @@ var helpBindings = []keyBinding{
 	{"j / Down", "Move down"},
 	{"k / Up", "Move up"},
 	{"Enter", "Open selected session"},
+	{"s", "Expand summary overlay"},
 	{"/", "Search (real-time filter)"},
 	{"Esc", "Cancel search / Close dialog"},
 	{"Tab", "Cycle project filter"},
