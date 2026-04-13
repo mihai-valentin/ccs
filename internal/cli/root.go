@@ -29,6 +29,7 @@ func NewRootCmd() *cobra.Command {
 		newDeleteCmd(),
 		newReindexCmd(),
 		newCompletionCmd(),
+		newUICmd(),
 	)
 
 	return rootCmd
