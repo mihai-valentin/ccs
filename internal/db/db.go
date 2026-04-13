@@ -28,6 +28,12 @@ func Open(dbPath string) (*DB, error) {
 		return nil, fmt.Errorf("open database: %w", err)
 	}
 
+	// Force a single connection so that connection-scoped PRAGMAs (like
+	// foreign_keys=ON) apply to every query. sql.Open returns a pool and
+	// PRAGMAs set on one connection don't carry over to new ones. A single
+	// connection is fine for a local CLI tool with no concurrent DB access.
+	sqlDB.SetMaxOpenConns(1)
+
 	// Enable WAL mode and foreign keys.
 	for _, pragma := range []string{
 		"PRAGMA journal_mode=WAL",
