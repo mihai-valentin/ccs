@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/mihai/ccs/internal/db"
+	"github.com/mihai/ccs/internal/format"
 	"github.com/mihai/ccs/internal/indexer"
 )
 
@@ -59,29 +60,7 @@ func syncIndex() (*db.DB, error) {
 }
 
 func formatRelativeTime(t time.Time) string {
-	if t.IsZero() {
-		return "-"
-	}
-	d := time.Since(t)
-	switch {
-	case d < time.Minute:
-		return "just now"
-	case d < time.Hour:
-		m := int(d.Minutes())
-		return fmt.Sprintf("%dm ago", m)
-	case d < 24*time.Hour:
-		h := int(d.Hours())
-		return fmt.Sprintf("%dh ago", h)
-	case d < 30*24*time.Hour:
-		days := int(d.Hours() / 24)
-		return fmt.Sprintf("%dd ago", days)
-	case d < 365*24*time.Hour:
-		months := int(d.Hours() / 24 / 30)
-		return fmt.Sprintf("%dmo ago", months)
-	default:
-		years := int(d.Hours() / 24 / 365)
-		return fmt.Sprintf("%dy ago", years)
-	}
+	return format.FormatRelativeTime(t)
 }
 
 func printJSON(v any) error {
@@ -95,18 +74,9 @@ func newTabWriter() *tabwriter.Writer {
 }
 
 func truncate(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
-	}
-	return s[:maxLen-3] + "..."
+	return format.Truncate(s, maxLen)
 }
 
 func sessionDisplayName(name, id string) string {
-	if name != "" {
-		return name
-	}
-	if len(id) >= 8 {
-		return id[:8]
-	}
-	return id
+	return format.SessionDisplayName(name, id)
 }

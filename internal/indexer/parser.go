@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/mihai/ccs/internal/format"
 )
 
 // ParsedSession holds extracted metadata from a JSONL session file.
@@ -82,11 +84,8 @@ func ParseSessionFile(path string) (*ParsedSession, error) {
 		// Parse timestamp.
 		var ts time.Time
 		if entry.Timestamp != "" {
-			parsed, err := time.Parse(time.RFC3339Nano, entry.Timestamp)
-			if err != nil {
-				parsed, err = time.Parse(time.RFC3339, entry.Timestamp)
-			}
-			if err == nil {
+			parsed := format.ParseTime(entry.Timestamp)
+			if !parsed.IsZero() {
 				ts = parsed
 				if p.FirstTime.IsZero() {
 					p.FirstTime = ts

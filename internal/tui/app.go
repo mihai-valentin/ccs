@@ -10,6 +10,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/mihai/ccs/internal/db"
+	"github.com/mihai/ccs/internal/format"
 	"github.com/mihai/ccs/internal/model"
 )
 
@@ -471,13 +472,7 @@ func (m Model) listHeight() int {
 }
 
 func sessionDisplayName(s model.Session) string {
-	if s.Name != "" {
-		return s.Name
-	}
-	if len(s.ID) >= 8 {
-		return s.ID[:8]
-	}
-	return s.ID
+	return format.SessionDisplayName(s.Name, s.ID)
 }
 
 func isStale(s model.Session) bool {

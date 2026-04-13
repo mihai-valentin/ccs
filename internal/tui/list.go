@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mihai/ccs/internal/format"
 	"github.com/mihai/ccs/internal/model"
 )
 
@@ -107,36 +108,12 @@ func (m Model) renderRow(idx int, s model.Session, colNum, colName, colProject, 
 	}
 }
 
-// formatRelativeTime formats a time as a relative duration string.
 func formatRelativeTime(t time.Time) string {
-	if t.IsZero() {
-		return "-"
-	}
-	d := time.Since(t)
-	switch {
-	case d < time.Minute:
-		return "just now"
-	case d < time.Hour:
-		return fmt.Sprintf("%dm ago", int(d.Minutes()))
-	case d < 24*time.Hour:
-		return fmt.Sprintf("%dh ago", int(d.Hours()))
-	case d < 30*24*time.Hour:
-		return fmt.Sprintf("%dd ago", int(d.Hours()/24))
-	case d < 365*24*time.Hour:
-		return fmt.Sprintf("%dmo ago", int(d.Hours()/24/30))
-	default:
-		return fmt.Sprintf("%dy ago", int(d.Hours()/24/365))
-	}
+	return format.FormatRelativeTime(t)
 }
 
 func truncateStr(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
-	}
-	if maxLen <= 3 {
-		return s[:maxLen]
-	}
-	return s[:maxLen-3] + "..."
+	return format.Truncate(s, maxLen)
 }
 
 func formatTagsInline(tags []model.Tag) string {

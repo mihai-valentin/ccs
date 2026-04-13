@@ -3,9 +3,9 @@ package opener
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/mihai/ccs/internal/db"
+	"github.com/mihai/ccs/internal/format"
 	"github.com/mihai/ccs/internal/model"
 )
 
@@ -160,9 +160,9 @@ func scanResolveRows(rows interface {
 		s.FirstMessage = firstMsg.String()
 		s.LastMessage = lastMsg.String()
 		s.Summary = summary.String()
-		s.CreatedAt = parseTime(createdAt)
-		s.UpdatedAt = parseTime(updatedAt)
-		s.FileModTime = parseTime(fileModTime)
+		s.CreatedAt = format.ParseTime(createdAt)
+		s.UpdatedAt = format.ParseTime(updatedAt)
+		s.FileModTime = format.ParseTime(fileModTime)
 		sessions = append(sessions, s)
 	}
 	return sessions, rows.Err()
@@ -197,10 +197,3 @@ func (ns nullString) String() string {
 	return ns.val
 }
 
-func parseTime(s string) time.Time {
-	t, err := time.Parse(time.RFC3339, s)
-	if err != nil {
-		return time.Time{}
-	}
-	return t
-}

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mihai/ccs/internal/format"
 	"github.com/mihai/ccs/internal/model"
 )
 
@@ -16,12 +17,7 @@ func formatTime(t time.Time) string {
 }
 
 func parseTime(s string) time.Time {
-	t, err := time.Parse(timeFormat, s)
-	if err != nil {
-		// Fall back to RFC3339 for existing DB entries stored before this fix.
-		t, _ = time.Parse(time.RFC3339, s)
-	}
-	return t
+	return format.ParseTime(s)
 }
 
 func nullStr(s string) sql.NullString {
