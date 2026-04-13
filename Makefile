@@ -1,4 +1,4 @@
-.PHONY: build install test lint clean
+.PHONY: build install test lint clean release-dry-run
 
 build:
 	go build -o bin/ccs ./cmd/ccs/
@@ -15,3 +15,6 @@ lint:
 
 clean:
 	rm -rf bin/
+
+release-dry-run:
+	goreleaser release --snapshot --clean
