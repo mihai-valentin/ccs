@@ -31,4 +31,7 @@ Thumbs.db
 *.db-journal
 *.db-wal
 *.db-shm
+# Playground / scratch
+.playground/
+
 .agent-orch/
