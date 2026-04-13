@@ -251,10 +251,13 @@ func (d *DB) ListProjects() ([]string, error) {
 }
 
 // PurgeMissingSessions removes sessions whose IDs are not in the provided list.
+// If existingIDs is empty, we return early without deleting anything. An empty
+// list most likely means the scan found no files (e.g. ~/.claude was temporarily
+// inaccessible), and blindly deleting all sessions would cause total data loss
+// including cascade-deletion of all tags.
 func (d *DB) PurgeMissingSessions(existingIDs []string) error {
 	if len(existingIDs) == 0 {
-		_, err := d.Exec("DELETE FROM sessions")
-		return err
+		return nil
 	}
 
 	placeholders := make([]string, len(existingIDs))

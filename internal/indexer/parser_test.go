@@ -198,7 +198,7 @@ func TestScanSessions_SkipsSubagents(t *testing.T) {
 	// Create a subagent file that should be skipped
 	writeTempJSONL(t, subagentDir, "sub-001.jsonl", `{"sessionId":"sub-001"}`)
 
-	files, err := ScanSessions(claudeDir)
+	files, _, err := ScanSessions(claudeDir)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -215,7 +215,7 @@ func TestScanSessions_SkipsSubagents(t *testing.T) {
 }
 
 func TestScanSessions_NonexistentDir(t *testing.T) {
-	files, err := ScanSessions("/nonexistent/path")
+	files, _, err := ScanSessions("/nonexistent/path")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

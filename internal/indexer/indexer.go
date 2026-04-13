@@ -36,7 +36,7 @@ func (idx *Indexer) Reindex() error {
 }
 
 func (idx *Indexer) run(force bool) error {
-	files, err := ScanSessions(idx.claudeDir)
+	files, scanHadErrors, err := ScanSessions(idx.claudeDir)
 	if err != nil {
 		return fmt.Errorf("scan sessions: %w", err)
 	}
@@ -96,8 +96,15 @@ func (idx *Indexer) run(force bool) error {
 	}
 
 	// Purge sessions whose files no longer exist on disk.
-	if err := idx.db.PurgeMissingSessions(existingIDs); err != nil {
-		return fmt.Errorf("purge missing sessions: %w", err)
+	// Skip purge if the scan encountered errors (partial results) — purging
+	// based on an incomplete scan would incorrectly delete sessions whose
+	// files were simply inaccessible.
+	if scanHadErrors {
+		log.Printf("warning: skipping purge of missing sessions because scan encountered errors (partial results)")
+	} else {
+		if err := idx.db.PurgeMissingSessions(existingIDs); err != nil {
+			return fmt.Errorf("purge missing sessions: %w", err)
+		}
 	}
 
 	return nil
