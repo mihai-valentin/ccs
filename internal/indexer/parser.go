@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/mihai/ccs/internal/format"
+	"github.com/mihai-valentin/ccs/internal/format"
 )
 
 // ParsedSession holds extracted metadata from a JSONL session file.

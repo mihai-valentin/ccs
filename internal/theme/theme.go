@@ -10,7 +10,7 @@ import (
 	"runtime"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/mihai/ccs/internal/db"
+	"github.com/mihai-valentin/ccs/internal/db"
 )
 
 const configKeyThemeColor = "theme_color"

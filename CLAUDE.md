@@ -121,6 +121,16 @@ When opening a session, `ccs`:
 
 Session identifiers are resolved in order: exact UUID > UUID prefix (4+ chars) > exact name > fuzzy name match. Ambiguous matches prompt the user to pick.
 
+## Verification (for CI / automated agents)
+
+```bash
+go vet ./...            # Static analysis (replaces tsc --noEmit)
+go build ./...          # Confirm compilation
+go test ./...           # Run all tests
+```
+
+Do NOT use `npm`, `tsc`, `npx`, or any Node.js tooling — this is a pure Go project.
+
 ## Key Design Decisions
 
 - **Pure Go SQLite** (`modernc.org/sqlite`) — no CGO dependency, cross-compilation works out of the box

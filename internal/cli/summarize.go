@@ -5,11 +5,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mihai/ccs/internal/db"
-	"github.com/mihai/ccs/internal/model"
-	"github.com/mihai/ccs/internal/ollama"
-	"github.com/mihai/ccs/internal/opener"
-	"github.com/mihai/ccs/internal/summarizer"
+	"github.com/mihai-valentin/ccs/internal/db"
+	"github.com/mihai-valentin/ccs/internal/model"
+	"github.com/mihai-valentin/ccs/internal/ollama"
+	"github.com/mihai-valentin/ccs/internal/opener"
+	"github.com/mihai-valentin/ccs/internal/summarizer"
 	"github.com/spf13/cobra"
 )
 

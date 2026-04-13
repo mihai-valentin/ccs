@@ -1,4 +1,4 @@
-module github.com/mihai/ccs
+module github.com/mihai-valentin/ccs
 
 go 1.24.2
 

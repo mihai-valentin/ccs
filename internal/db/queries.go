@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mihai/ccs/internal/format"
-	"github.com/mihai/ccs/internal/model"
+	"github.com/mihai-valentin/ccs/internal/format"
+	"github.com/mihai-valentin/ccs/internal/model"
 )
 
 const timeFormat = time.RFC3339Nano

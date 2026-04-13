@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/mihai/ccs/internal/model"
-	"github.com/mihai/ccs/internal/opener"
-	"github.com/mihai/ccs/internal/theme"
-	"github.com/mihai/ccs/internal/tui"
+	"github.com/mihai-valentin/ccs/internal/model"
+	"github.com/mihai-valentin/ccs/internal/opener"
+	"github.com/mihai-valentin/ccs/internal/theme"
+	"github.com/mihai-valentin/ccs/internal/tui"
 	"github.com/spf13/cobra"
 )
 

@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"syscall"
 
-	"github.com/mihai/ccs/internal/model"
+	"github.com/mihai-valentin/ccs/internal/model"
 )
 
 // OpenSession opens a Claude Code session by resuming it in the session's

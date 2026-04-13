@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/mihai/ccs/internal/theme"
+	"github.com/mihai-valentin/ccs/internal/theme"
 	"github.com/spf13/cobra"
 )
 

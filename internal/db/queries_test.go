@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mihai/ccs/internal/model"
+	"github.com/mihai-valentin/ccs/internal/model"
 )
 
 func setupTestDB(t *testing.T) *DB {

@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/mihai/ccs/internal/indexer"
+	"github.com/mihai-valentin/ccs/internal/indexer"
 	"github.com/spf13/cobra"
 )
 

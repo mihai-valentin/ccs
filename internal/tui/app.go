@@ -11,9 +11,9 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/mihai/ccs/internal/db"
-	"github.com/mihai/ccs/internal/format"
-	"github.com/mihai/ccs/internal/model"
+	"github.com/mihai-valentin/ccs/internal/db"
+	"github.com/mihai-valentin/ccs/internal/format"
+	"github.com/mihai-valentin/ccs/internal/model"
 )
 
 // Mode represents the current interaction mode of the TUI.

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mihai/ccs/internal/opener"
+	"github.com/mihai-valentin/ccs/internal/opener"
 	"github.com/spf13/cobra"
 )
 

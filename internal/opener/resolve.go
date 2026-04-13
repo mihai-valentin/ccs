@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mihai/ccs/internal/db"
-	"github.com/mihai/ccs/internal/format"
-	"github.com/mihai/ccs/internal/model"
+	"github.com/mihai-valentin/ccs/internal/db"
+	"github.com/mihai-valentin/ccs/internal/format"
+	"github.com/mihai-valentin/ccs/internal/model"
 )
 
 // ErrAmbiguous is returned when a session identifier matches multiple sessions.

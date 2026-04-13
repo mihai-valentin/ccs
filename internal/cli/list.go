@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mihai/ccs/internal/model"
+	"github.com/mihai-valentin/ccs/internal/model"
 	"github.com/spf13/cobra"
 )
 

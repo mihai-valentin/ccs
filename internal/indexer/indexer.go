@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mihai/ccs/internal/db"
-	"github.com/mihai/ccs/internal/model"
+	"github.com/mihai-valentin/ccs/internal/db"
+	"github.com/mihai-valentin/ccs/internal/model"
 )
 
 // Indexer scans for Claude Code session files and syncs metadata into the database.

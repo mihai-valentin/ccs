@@ -8,9 +8,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/mihai/ccs/internal/db"
-	"github.com/mihai/ccs/internal/format"
-	"github.com/mihai/ccs/internal/indexer"
+	"github.com/mihai-valentin/ccs/internal/db"
+	"github.com/mihai-valentin/ccs/internal/format"
+	"github.com/mihai-valentin/ccs/internal/indexer"
 )
 
 var (

@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/mihai/ccs/internal/opener"
+	"github.com/mihai-valentin/ccs/internal/opener"
 	"github.com/spf13/cobra"
 )
 

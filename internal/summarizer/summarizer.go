@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mihai/ccs/internal/format"
-	"github.com/mihai/ccs/internal/indexer"
-	"github.com/mihai/ccs/internal/ollama"
+	"github.com/mihai-valentin/ccs/internal/format"
+	"github.com/mihai-valentin/ccs/internal/indexer"
+	"github.com/mihai-valentin/ccs/internal/ollama"
 )
 
 const (
