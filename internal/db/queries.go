@@ -254,6 +254,39 @@ func (d *DB) ListProjects() ([]string, error) {
 	return projects, rows.Err()
 }
 
+// SessionMeta holds the minimal file-level metadata needed for incremental
+// indexing change detection.
+type SessionMeta struct {
+	FileSize    int64
+	FileModTime time.Time
+}
+
+// GetAllSessionMeta returns file-size and mod-time for every indexed session,
+// keyed by session ID. Unlike ListSessions it applies no LIMIT, so the caller
+// gets a complete picture regardless of how many sessions exist.
+func (d *DB) GetAllSessionMeta() (map[string]SessionMeta, error) {
+	rows, err := d.Query("SELECT id, file_size, file_mod_time FROM sessions")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	m := make(map[string]SessionMeta)
+	for rows.Next() {
+		var id string
+		var fileSize int64
+		var fileModTime string
+		if err := rows.Scan(&id, &fileSize, &fileModTime); err != nil {
+			return nil, err
+		}
+		m[id] = SessionMeta{
+			FileSize:    fileSize,
+			FileModTime: parseTime(fileModTime),
+		}
+	}
+	return m, rows.Err()
+}
+
 // PurgeMissingSessions removes sessions whose IDs are not in the provided list.
 // If existingIDs is empty, we return early without deleting anything. An empty
 // list most likely means the scan found no files (e.g. ~/.claude was temporarily

@@ -48,9 +48,9 @@ func (idx *Indexer) run(force bool) error {
 	}
 
 	// Load existing DB records to detect changes.
-	var dbSessions map[string]*model.Session
+	var dbMeta map[string]db.SessionMeta
 	if !force {
-		dbSessions, err = idx.loadSessionMap()
+		dbMeta, err = idx.db.GetAllSessionMeta()
 		if err != nil {
 			return fmt.Errorf("load existing sessions: %w", err)
 		}
@@ -58,7 +58,7 @@ func (idx *Indexer) run(force bool) error {
 
 	for _, f := range files {
 		if !force {
-			if existing, ok := dbSessions[f.SessionID]; ok {
+			if existing, ok := dbMeta[f.SessionID]; ok {
 				if existing.FileSize == f.FileSize && existing.FileModTime.Equal(f.FileModTime) {
 					continue // unchanged, skip
 				}
@@ -108,17 +108,4 @@ func (idx *Indexer) run(force bool) error {
 	}
 
 	return nil
-}
-
-// loadSessionMap fetches all sessions from the DB keyed by ID.
-func (idx *Indexer) loadSessionMap() (map[string]*model.Session, error) {
-	sessions, err := idx.db.ListSessions(model.SessionFilter{Limit: 100000})
-	if err != nil {
-		return nil, err
-	}
-	m := make(map[string]*model.Session, len(sessions))
-	for i := range sessions {
-		m[sessions[i].ID] = &sessions[i]
-	}
-	return m, nil
 }
