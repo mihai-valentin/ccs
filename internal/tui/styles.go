@@ -109,6 +109,10 @@ var (
 	successStyle = lipgloss.NewStyle().
 			Foreground(colorSuccess)
 
+	// Dim info text
+	dimStyle = lipgloss.NewStyle().
+			Foreground(colorMuted)
+
 	// Delete confirmation
 	deletePromptStyle = lipgloss.NewStyle().
 				Foreground(colorError).

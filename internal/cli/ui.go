@@ -27,7 +27,7 @@ func newUICmd() *cobra.Command {
 
 			// Load all sessions (no limit for TUI)
 			sessions, err := d.ListSessions(model.SessionFilter{
-				Limit:  -1,
+				Limit:  0,
 				SortBy: "updated",
 			})
 			if err != nil {

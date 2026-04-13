@@ -156,13 +156,9 @@ func (d *DB) ListSessions(f model.SessionFilter) ([]model.Session, error) {
 		query += " ORDER BY s.updated_at DESC"
 	}
 
-	// Limit == -1 means unlimited; Limit == 0 uses the default of 20.
-	if f.Limit != -1 {
-		limit := f.Limit
-		if limit <= 0 {
-			limit = 20
-		}
-		query += fmt.Sprintf(" LIMIT %d", limit)
+	// Limit <= 0 means unlimited; positive values cap the result set.
+	if f.Limit > 0 {
+		query += fmt.Sprintf(" LIMIT %d", f.Limit)
 	}
 
 	rows, err := d.Query(query, args...)

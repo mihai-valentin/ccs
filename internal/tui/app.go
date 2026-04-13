@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -58,6 +59,9 @@ type Model struct {
 
 	// Claude data directory (for JSONL file operations)
 	claudeDir string
+
+	// TotalCount tracks the total number of matched sessions before capping.
+	TotalCount int
 
 	// Result: session to open after TUI exits
 	SessionToOpen *model.Session
@@ -367,6 +371,10 @@ func (m Model) viewTopBar() string {
 	}
 	parts = append(parts, filterStyle.Render("["+filterLabel+"]"))
 
+	if m.TotalCount > maxDisplayed {
+		parts = append(parts, dimStyle.Render(fmt.Sprintf("Showing %d of %d", maxDisplayed, m.TotalCount)))
+	}
+
 	return lipgloss.JoinHorizontal(lipgloss.Center, strings.Join(parts, "  "))
 }
 
@@ -421,6 +429,8 @@ func (m *Model) cycleProjectFilter() {
 	m.applyFilters()
 }
 
+const maxDisplayed = 1000
+
 func (m *Model) applyFilters() {
 	m.filteredSessions = nil
 	query := strings.ToLower(m.searchQuery)
@@ -442,6 +452,10 @@ func (m *Model) applyFilters() {
 			}
 		}
 		m.filteredSessions = append(m.filteredSessions, s)
+	}
+	m.TotalCount = len(m.filteredSessions)
+	if len(m.filteredSessions) > maxDisplayed {
+		m.filteredSessions = m.filteredSessions[:maxDisplayed]
 	}
 	// Reset selection if out of bounds
 	if m.selectedIndex >= len(m.filteredSessions) {

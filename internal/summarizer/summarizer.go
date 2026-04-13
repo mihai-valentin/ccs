@@ -103,6 +103,7 @@ func buildExcerpt(messages []message) []message {
 	}
 
 	var excerpt []message
+	midStart := n / 2
 
 	// Head
 	for i := 0; i < headMessages && i < n; i++ {
@@ -111,16 +112,18 @@ func buildExcerpt(messages []message) []message {
 
 	// Mid (from the middle of the conversation)
 	if n > headMessages+midMessages+tailMessages {
-		midStart := n / 2
 		for i := 0; i < midMessages && midStart+i < n; i++ {
 			excerpt = append(excerpt, messages[midStart+i])
 		}
 	}
 
-	// Tail
+	// Tail — prevent overlap with mid section
 	tailStart := n - tailMessages
 	if tailStart < 0 {
 		tailStart = 0
+	}
+	if tailStart < midStart+midMessages {
+		tailStart = midStart + midMessages
 	}
 	for i := tailStart; i < n; i++ {
 		excerpt = append(excerpt, messages[i])
