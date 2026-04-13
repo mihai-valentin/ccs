@@ -22,7 +22,7 @@ func setupTestDB(t *testing.T) *DB {
 
 func insertTestSession(t *testing.T, d *DB, id string) {
 	t.Helper()
-	now := time.Now().Truncate(time.Second)
+	now := time.Now()
 	s := &model.Session{
 		ID:          id,
 		ProjectDir:  "test-project",
@@ -35,6 +35,48 @@ func insertTestSession(t *testing.T, d *DB, id string) {
 	}
 	if err := d.UpsertSession(s); err != nil {
 		t.Fatalf("insert test session %s: %v", id, err)
+	}
+}
+
+func TestFileModTimeNanosecondPrecision(t *testing.T) {
+	d := setupTestDB(t)
+
+	// A time with nanosecond precision (not on a second boundary).
+	modTime := time.Date(2026, 4, 13, 10, 30, 45, 123456789, time.UTC)
+
+	s := &model.Session{
+		ID:           "nano-session",
+		ProjectDir:   "test-project",
+		Cwd:          "/tmp/test",
+		MessageCount: 1,
+		CreatedAt:    modTime,
+		UpdatedAt:    modTime,
+		FileSize:     200,
+		FileModTime:  modTime,
+	}
+	if err := d.UpsertSession(s); err != nil {
+		t.Fatalf("upsert: %v", err)
+	}
+
+	got, err := d.GetSessionByID("nano-session")
+	if err != nil {
+		t.Fatalf("get: %v", err)
+	}
+	if got == nil {
+		t.Fatal("session not found")
+	}
+	if !got.FileModTime.Equal(modTime) {
+		t.Errorf("FileModTime lost precision: stored %v, got %v", modTime, got.FileModTime)
+	}
+}
+
+func TestParseTimeFallsBackToRFC3339(t *testing.T) {
+	// Simulate a value stored before the RFC3339Nano fix.
+	oldFormat := "2026-04-13T10:30:45Z"
+	got := parseTime(oldFormat)
+	want := time.Date(2026, 4, 13, 10, 30, 45, 0, time.UTC)
+	if !got.Equal(want) {
+		t.Errorf("parseTime fallback failed: got %v, want %v", got, want)
 	}
 }
 

@@ -9,14 +9,18 @@ import (
 	"github.com/mihai/ccs/internal/model"
 )
 
-const timeFormat = time.RFC3339
+const timeFormat = time.RFC3339Nano
 
 func formatTime(t time.Time) string {
 	return t.Format(timeFormat)
 }
 
 func parseTime(s string) time.Time {
-	t, _ := time.Parse(timeFormat, s)
+	t, err := time.Parse(timeFormat, s)
+	if err != nil {
+		// Fall back to RFC3339 for existing DB entries stored before this fix.
+		t, _ = time.Parse(time.RFC3339, s)
+	}
 	return t
 }
 
