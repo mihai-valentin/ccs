@@ -406,6 +406,34 @@ func (d *DB) UpdateSummary(sessionID, summary string) error {
 	return err
 }
 
+// GetConfig retrieves a configuration value by key. Returns empty string if not found.
+func (d *DB) GetConfig(key string) (string, error) {
+	var value sql.NullString
+	err := d.QueryRow("SELECT value FROM config WHERE key = ?", key).Scan(&value)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	return fromNull(value), nil
+}
+
+// SetConfig stores a configuration key-value pair, replacing any existing value.
+func (d *DB) SetConfig(key, value string) error {
+	_, err := d.Exec(
+		"INSERT INTO config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+		key, value,
+	)
+	return err
+}
+
+// DeleteConfig removes a configuration entry by key.
+func (d *DB) DeleteConfig(key string) error {
+	_, err := d.Exec("DELETE FROM config WHERE key = ?", key)
+	return err
+}
+
 func scanSessions(rows *sql.Rows) ([]model.Session, error) {
 	var sessions []model.Session
 	for rows.Next() {

@@ -31,4 +31,9 @@ CREATE TABLE IF NOT EXISTS session_tags (
 CREATE INDEX IF NOT EXISTS idx_sessions_project ON sessions(project_dir);
 CREATE INDEX IF NOT EXISTS idx_sessions_updated ON sessions(updated_at);
 CREATE INDEX IF NOT EXISTS idx_sessions_name ON sessions(name);
+
+CREATE TABLE IF NOT EXISTS config (
+  key TEXT PRIMARY KEY,
+  value TEXT
+);
 `
