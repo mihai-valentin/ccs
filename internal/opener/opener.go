@@ -21,8 +21,8 @@ func OpenSession(session model.Session, newTerminal bool) error {
 		)
 	}
 
-	shellCmd := fmt.Sprintf("cd %q && claude --resume %q", session.Cwd, session.ID)
-	cmd := exec.Command("bash", "-c", shellCmd)
+	cmd := exec.Command("claude", "--resume", session.ID)
+	cmd.Dir = session.Cwd
 
 	if newTerminal {
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
