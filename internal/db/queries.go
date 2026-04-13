@@ -84,15 +84,15 @@ func (d *DB) DeleteSession(id string) error {
 // GetSessionByID retrieves a single session by its ID.
 func (d *DB) GetSessionByID(id string) (*model.Session, error) {
 	s := &model.Session{}
-	var gitBranch, name, firstMsg, lastMsg sql.NullString
+	var gitBranch, name, firstMsg, lastMsg, summary sql.NullString
 	var createdAt, updatedAt, fileModTime string
 	err := d.QueryRow(`
 		SELECT id, project_dir, cwd, git_branch, name, first_message, last_message,
-		       message_count, created_at, updated_at, file_size, file_mod_time
+		       message_count, created_at, updated_at, file_size, file_mod_time, summary
 		FROM sessions WHERE id = ?`, id).Scan(
 		&s.ID, &s.ProjectDir, &s.Cwd, &gitBranch, &name,
 		&firstMsg, &lastMsg, &s.MessageCount,
-		&createdAt, &updatedAt, &s.FileSize, &fileModTime,
+		&createdAt, &updatedAt, &s.FileSize, &fileModTime, &summary,
 	)
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -104,6 +104,7 @@ func (d *DB) GetSessionByID(id string) (*model.Session, error) {
 	s.Name = fromNull(name)
 	s.FirstMessage = fromNull(firstMsg)
 	s.LastMessage = fromNull(lastMsg)
+	s.Summary = fromNull(summary)
 	s.CreatedAt = parseTime(createdAt)
 	s.UpdatedAt = parseTime(updatedAt)
 	s.FileModTime = parseTime(fileModTime)
@@ -114,7 +115,7 @@ func (d *DB) GetSessionByID(id string) (*model.Session, error) {
 func (d *DB) ListSessions(f model.SessionFilter) ([]model.Session, error) {
 	query := `SELECT s.id, s.project_dir, s.cwd, s.git_branch, s.name, s.first_message,
 	                 s.last_message, s.message_count, s.created_at, s.updated_at,
-	                 s.file_size, s.file_mod_time
+	                 s.file_size, s.file_mod_time, s.summary
 	          FROM sessions s`
 	var args []any
 	var conditions []string
@@ -168,7 +169,7 @@ func (d *DB) SearchSessions(query string) ([]model.Session, error) {
 	pattern := "%" + query + "%"
 	rows, err := d.Query(`
 		SELECT id, project_dir, cwd, git_branch, name, first_message, last_message,
-		       message_count, created_at, updated_at, file_size, file_mod_time
+		       message_count, created_at, updated_at, file_size, file_mod_time, summary
 		FROM sessions
 		WHERE name LIKE ? OR first_message LIKE ? OR last_message LIKE ?
 		      OR cwd LIKE ? OR git_branch LIKE ?
@@ -344,16 +345,22 @@ func (d *DB) PurgeMissingSessionsTx(tx *sql.Tx, existingIDs []string) error {
 	return err
 }
 
+// UpdateSummary stores an AI-generated summary for the given session.
+func (d *DB) UpdateSummary(sessionID, summary string) error {
+	_, err := d.Exec("UPDATE sessions SET summary = ? WHERE id = ?", nullStr(summary), sessionID)
+	return err
+}
+
 func scanSessions(rows *sql.Rows) ([]model.Session, error) {
 	var sessions []model.Session
 	for rows.Next() {
 		var s model.Session
-		var gitBranch, name, firstMsg, lastMsg sql.NullString
+		var gitBranch, name, firstMsg, lastMsg, summary sql.NullString
 		var createdAt, updatedAt, fileModTime string
 		if err := rows.Scan(
 			&s.ID, &s.ProjectDir, &s.Cwd, &gitBranch, &name,
 			&firstMsg, &lastMsg, &s.MessageCount,
-			&createdAt, &updatedAt, &s.FileSize, &fileModTime,
+			&createdAt, &updatedAt, &s.FileSize, &fileModTime, &summary,
 		); err != nil {
 			return nil, err
 		}
@@ -361,6 +368,7 @@ func scanSessions(rows *sql.Rows) ([]model.Session, error) {
 		s.Name = fromNull(name)
 		s.FirstMessage = fromNull(firstMsg)
 		s.LastMessage = fromNull(lastMsg)
+		s.Summary = fromNull(summary)
 		s.CreatedAt = parseTime(createdAt)
 		s.UpdatedAt = parseTime(updatedAt)
 		s.FileModTime = parseTime(fileModTime)

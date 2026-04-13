@@ -16,6 +16,7 @@ type Session struct {
 	UpdatedAt    time.Time
 	FileSize     int64
 	FileModTime  time.Time
+	Summary      string
 	Tags         []Tag
 }
 

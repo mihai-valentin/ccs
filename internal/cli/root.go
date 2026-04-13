@@ -30,6 +30,7 @@ func NewRootCmd() *cobra.Command {
 		newReindexCmd(),
 		newCompletionCmd(),
 		newUICmd(),
+		newSummarizeCmd(),
 	)
 
 	return rootCmd

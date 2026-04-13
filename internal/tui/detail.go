@@ -53,9 +53,16 @@ func (m Model) viewDetail() string {
 	lines := []string{
 		detailLabelStyle.Render("Tags:  ") + tagsStr,
 		detailLabelStyle.Render("CWD:   ") + detailValueStyle.Render(truncateStr(cwd, maxValWidth)),
-		detailLabelStyle.Render("First: ") + detailValueStyle.Render(firstMsg),
-		detailLabelStyle.Render("Last:  ") + detailValueStyle.Render(lastMsg),
 	}
+
+	if s.Summary != "" {
+		lines = append(lines, detailLabelStyle.Render("Sum:   ")+detailValueStyle.Render(truncateStr(s.Summary, maxValWidth)))
+	}
+
+	lines = append(lines,
+		detailLabelStyle.Render("First: ")+detailValueStyle.Render(firstMsg),
+		detailLabelStyle.Render("Last:  ")+detailValueStyle.Render(lastMsg),
+	)
 
 	content := strings.Join(lines, "\n")
 	boxWidth := m.width - 4

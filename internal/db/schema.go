@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
   file_size INTEGER NOT NULL,
-  file_mod_time TIMESTAMP NOT NULL
+  file_mod_time TIMESTAMP NOT NULL,
+  summary TEXT
 );
 
 CREATE TABLE IF NOT EXISTS tags (

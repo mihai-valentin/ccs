@@ -50,5 +50,8 @@ func Open(dbPath string) (*DB, error) {
 		return nil, fmt.Errorf("run schema migration: %w", err)
 	}
 
+	// Migrate: add summary column if missing (for existing DBs).
+	sqlDB.Exec("ALTER TABLE sessions ADD COLUMN summary TEXT")
+
 	return &DB{sqlDB}, nil
 }

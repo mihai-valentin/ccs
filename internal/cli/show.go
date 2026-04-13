@@ -59,6 +59,10 @@ func newShowCmd() *cobra.Command {
 				fmt.Printf("Tags:     %s\n", strings.Join(names, ", "))
 			}
 
+			if session.Summary != "" {
+				fmt.Printf("\nSummary:\n  %s\n", session.Summary)
+			}
+
 			if session.FirstMessage != "" {
 				fmt.Printf("\nFirst message:\n  %s\n", session.FirstMessage)
 			}
