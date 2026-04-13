@@ -95,7 +95,7 @@ func queryByIDPrefix(d *db.DB, prefix string) ([]model.Session, error) {
 	escaped := strings.ReplaceAll(strings.ReplaceAll(prefix, "%", "\\%"), "_", "\\_")
 	rows, err := d.Query(`
 		SELECT id, project_dir, cwd, git_branch, name, first_message, last_message,
-		       message_count, created_at, updated_at, file_size, file_mod_time
+		       message_count, created_at, updated_at, file_size, file_mod_time, summary
 		FROM sessions
 		WHERE id LIKE ? ESCAPE '\'
 		ORDER BY updated_at DESC
@@ -110,7 +110,7 @@ func queryByIDPrefix(d *db.DB, prefix string) ([]model.Session, error) {
 func queryByExactName(d *db.DB, name string) ([]model.Session, error) {
 	rows, err := d.Query(`
 		SELECT id, project_dir, cwd, git_branch, name, first_message, last_message,
-		       message_count, created_at, updated_at, file_size, file_mod_time
+		       message_count, created_at, updated_at, file_size, file_mod_time, summary
 		FROM sessions
 		WHERE name = ?
 		ORDER BY updated_at DESC
@@ -126,7 +126,7 @@ func queryByFuzzyName(d *db.DB, term string) ([]model.Session, error) {
 	pattern := "%" + strings.ReplaceAll(strings.ReplaceAll(term, "%", "\\%"), "_", "\\_") + "%"
 	rows, err := d.Query(`
 		SELECT id, project_dir, cwd, git_branch, name, first_message, last_message,
-		       message_count, created_at, updated_at, file_size, file_mod_time
+		       message_count, created_at, updated_at, file_size, file_mod_time, summary
 		FROM sessions
 		WHERE name LIKE ? ESCAPE '\'
 		ORDER BY updated_at DESC
@@ -146,12 +146,12 @@ func scanResolveRows(rows interface {
 	var sessions []model.Session
 	for rows.Next() {
 		var s model.Session
-		var gitBranch, name, firstMsg, lastMsg nullString
+		var gitBranch, name, firstMsg, lastMsg, summary nullString
 		var createdAt, updatedAt, fileModTime string
 		if err := rows.Scan(
 			&s.ID, &s.ProjectDir, &s.Cwd, &gitBranch, &name,
 			&firstMsg, &lastMsg, &s.MessageCount,
-			&createdAt, &updatedAt, &s.FileSize, &fileModTime,
+			&createdAt, &updatedAt, &s.FileSize, &fileModTime, &summary,
 		); err != nil {
 			return nil, err
 		}
@@ -159,6 +159,7 @@ func scanResolveRows(rows interface {
 		s.Name = name.String()
 		s.FirstMessage = firstMsg.String()
 		s.LastMessage = lastMsg.String()
+		s.Summary = summary.String()
 		s.CreatedAt = parseTime(createdAt)
 		s.UpdatedAt = parseTime(updatedAt)
 		s.FileModTime = parseTime(fileModTime)
