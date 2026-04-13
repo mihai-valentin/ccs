@@ -8,7 +8,7 @@ import (
 // viewTagDialog renders the inline tag prompt showing current tags
 // and an input for adding/removing a tag.
 func (m Model) viewTagDialog() string {
-	if len(m.filteredSessions) == 0 {
+	if len(m.filteredSessions) == 0 || m.selectedIndex >= len(m.filteredSessions) {
 		return ""
 	}
 

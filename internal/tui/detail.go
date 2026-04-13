@@ -9,7 +9,7 @@ import (
 
 // viewDetail renders the detail pane for the currently selected session.
 func (m Model) viewDetail() string {
-	if len(m.filteredSessions) == 0 {
+	if len(m.filteredSessions) == 0 || m.selectedIndex >= len(m.filteredSessions) {
 		return detailBorderStyle.Width(m.width - 4).Render(
 			detailLabelStyle.Render("No session selected"),
 		)
@@ -74,7 +74,7 @@ func (m Model) viewDetail() string {
 
 // viewSummaryOverlay renders the full summary as a centered overlay.
 func (m Model) viewSummaryOverlay() string {
-	if len(m.filteredSessions) == 0 {
+	if len(m.filteredSessions) == 0 || m.selectedIndex >= len(m.filteredSessions) {
 		return ""
 	}
 	s := m.filteredSessions[m.selectedIndex]
@@ -145,7 +145,7 @@ func wordWrap(text string, width int) string {
 
 // viewDeleteConfirm renders the inline delete confirmation prompt.
 func (m Model) viewDeleteConfirm() string {
-	if len(m.filteredSessions) == 0 {
+	if len(m.filteredSessions) == 0 || m.selectedIndex >= len(m.filteredSessions) {
 		return ""
 	}
 	s := m.filteredSessions[m.selectedIndex]

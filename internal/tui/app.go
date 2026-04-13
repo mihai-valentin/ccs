@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -92,6 +93,7 @@ func NewModel(sessions []model.Session, database *db.DB, claudeDir string) Model
 	for p := range projectSet {
 		projects = append(projects, p)
 	}
+	sort.Strings(projects)
 
 	m := Model{
 		allSessions: sessions,
@@ -152,7 +154,7 @@ func (m Model) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "k", "up":
 		m.moveUp()
 	case "enter":
-		if len(m.filteredSessions) > 0 {
+		if len(m.filteredSessions) > 0 && m.selectedIndex < len(m.filteredSessions) {
 			s := m.filteredSessions[m.selectedIndex]
 			m.SessionToOpen = &s
 			return m, tea.Quit
@@ -176,7 +178,7 @@ func (m Model) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "tab":
 		m.cycleProjectFilter()
 	case "s":
-		if len(m.filteredSessions) > 0 && m.filteredSessions[m.selectedIndex].Summary != "" {
+		if len(m.filteredSessions) > 0 && m.selectedIndex < len(m.filteredSessions) && m.filteredSessions[m.selectedIndex].Summary != "" {
 			m.mode = ModeSummary
 		}
 	case "?":
@@ -217,7 +219,7 @@ func (m Model) updateTag(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case "enter":
 		tagName := strings.TrimSpace(m.tagInput.Value())
-		if tagName != "" && m.db != nil && len(m.filteredSessions) > 0 {
+		if tagName != "" && m.db != nil && len(m.filteredSessions) > 0 && m.selectedIndex < len(m.filteredSessions) {
 			session := &m.filteredSessions[m.selectedIndex]
 			// Toggle: if tag exists, remove it; otherwise add it
 			hasTag := false
@@ -257,7 +259,7 @@ func (m Model) updateTag(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m Model) updateDeleteConfirm(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "y", "Y":
-		if m.db != nil && len(m.filteredSessions) > 0 {
+		if m.db != nil && len(m.filteredSessions) > 0 && m.selectedIndex < len(m.filteredSessions) {
 			session := m.filteredSessions[m.selectedIndex]
 			if err := m.db.DeleteSession(session.ID); err != nil {
 				m.statusMsg = "Error deleting session: " + err.Error()
@@ -431,6 +433,11 @@ func (m *Model) cycleProjectFilter() {
 
 const maxDisplayed = 1000
 
+// staleThresholdDays is the number of days after which a session is considered
+// stale and rendered with dimmed styling in the TUI list. Sessions with no
+// activity in this many days are visually de-emphasized to surface recent work.
+const staleThresholdDays = 30
+
 func (m *Model) applyFilters() {
 	m.filteredSessions = nil
 	query := strings.ToLower(m.searchQuery)
@@ -490,5 +497,5 @@ func sessionDisplayName(s model.Session) string {
 }
 
 func isStale(s model.Session) bool {
-	return time.Since(s.UpdatedAt) > 30*24*time.Hour
+	return time.Since(s.UpdatedAt) > staleThresholdDays*24*time.Hour
 }
