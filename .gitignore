@@ -31,3 +31,4 @@ Thumbs.db
 *.db-journal
 *.db-wal
 *.db-shm
+.agent-orch/
