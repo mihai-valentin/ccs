@@ -1,0 +1,20 @@
+{
+  "id": "ccs-fix-02-time-precision",
+  "projectId": "ccs",
+  "title": "Fix: RFC3339 loses sub-second precision, breaking incremental indexing",
+  "description": "High-severity bug: formatTime in queries.go uses time.RFC3339 (second precision) to store file_mod_time. Filesystem modtimes have nanosecond precision. After round-trip through SQLite, the comparison existing.FileModTime.Equal(f.FileModTime) always returns false because the stored time is truncated to seconds. This means every file is re-parsed on every run — incremental indexing is effectively broken.\n\nAlso fix: parseTime should handle the new format.",
+  "requirements": [
+    "In internal/db/queries.go: change timeFormat from time.RFC3339 to time.RFC3339Nano so sub-second filesystem modtimes survive the SQLite round-trip",
+    "Update parseTime to try RFC3339Nano first, then fall back to RFC3339 for backwards compatibility with existing DB entries",
+    "Add a test that verifies: store a session with a nanosecond-precision FileModTime, read it back, and confirm FileModTime.Equal returns true",
+    "Verify the project compiles with 'go build ./cmd/ccs/' and all tests pass with 'go test ./...'"
+  ],
+  "allowedPaths": [
+    "internal/db/queries.go",
+    "internal/db/queries_test.go"
+  ],
+  "forbiddenPaths": [],
+  "priority": 8,
+  "status": "pending",
+  "maxRetries": 2
+}

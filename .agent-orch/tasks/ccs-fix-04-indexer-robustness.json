@@ -1,0 +1,24 @@
+{
+  "id": "ccs-fix-04-indexer-robustness",
+  "projectId": "ccs",
+  "title": "Fix: loadSessionMap cap, UpdatedAt from non-messages, no transaction",
+  "description": "Three medium-severity issues in the indexer/DB layer:\n\n1. loadSessionMap uses ListSessions with Limit:100000 — sessions beyond 100k are never in the map, so they get re-parsed every run. Should use an unbounded query.\n\n2. Parser sets LastTime from ANY entry's timestamp (including permission-mode, file-history-snapshot). UpdatedAt should only reflect user/assistant message timestamps.\n\n3. The upsert loop + purge in indexer.run() has no transaction wrapper. A crash mid-run leaves the DB in an inconsistent state (some sessions upserted, others not, purge not run).",
+  "requirements": [
+    "In internal/db/queries.go: add a new method GetAllSessionMeta() that returns all sessions (id, file_size, file_mod_time only) without a LIMIT clause. Use a lightweight struct or just return map[string]struct{FileSize int64; FileModTime time.Time}",
+    "In internal/indexer/indexer.go: replace loadSessionMap (which uses ListSessions with Limit:100000) with a call to the new GetAllSessionMeta method",
+    "In internal/indexer/parser.go: track LastTime only from entries where type is 'user' or 'assistant' (not from permission-mode, file-history-snapshot, etc). Keep FirstTime as-is (first entry timestamp is fine for creation time)",
+    "In internal/indexer/indexer.go run(): wrap the upsert loop + PurgeMissingSessions in a SQL transaction (begin tx, upsert all, purge, commit). On error, rollback.",
+    "Update UpsertSession and PurgeMissingSessions to accept a *sql.Tx parameter (or create Tx-accepting variants) so they can participate in the transaction",
+    "Verify the project compiles with 'go build ./cmd/ccs/' and all tests pass with 'go test ./...'"
+  ],
+  "allowedPaths": [
+    "internal/db/queries.go",
+    "internal/indexer/indexer.go",
+    "internal/indexer/parser.go",
+    "internal/indexer/parser_test.go"
+  ],
+  "forbiddenPaths": [],
+  "priority": 7,
+  "status": "pending",
+  "maxRetries": 2
+}

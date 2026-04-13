@@ -1,0 +1,25 @@
+{
+  "id": "ccs-fix-01-purge-safety",
+  "projectId": "ccs",
+  "title": "Fix: PurgeMissingSessions wipes DB on empty scan result",
+  "description": "Critical bug: if ScanSessions returns an empty slice (e.g. ~/.claude temporarily inaccessible), PurgeMissingSessions deletes ALL sessions and cascade-deletes all tags. Total data loss from a transient filesystem issue.\n\nAlso related: WalkDir callback returns nil on errors (scanner.go:39), silently skipping files. Those skipped sessions appear missing and get purged.\n\nBoth issues feed into the same purge-safety problem.",
+  "requirements": [
+    "In internal/db/queries.go PurgeMissingSessions: if existingIDs is empty, return early without deleting (do NOT delete all sessions). Add a comment explaining why.",
+    "In internal/indexer/scanner.go WalkDir callback: when err != nil, log the error and return nil (continue walking), but also set a flag or collect errors. If any walk errors occurred, do NOT purge — only purge when the scan completed cleanly.",
+    "In internal/indexer/indexer.go run(): accept a 'scanHadErrors' signal from ScanSessions. If true, skip PurgeMissingSessions and log a warning that purge was skipped due to scan errors.",
+    "Update ScanSessions signature to return ([]SessionFile, bool, error) where the bool indicates whether any walk errors were encountered (partial scan).",
+    "Add tests: (1) PurgeMissingSessions with empty slice does NOT delete sessions, (2) ScanSessions with inaccessible subdirectory returns partial=true and still returns accessible files",
+    "Verify the project compiles with 'go build ./cmd/ccs/' and all tests pass with 'go test ./...'"
+  ],
+  "allowedPaths": [
+    "internal/db/queries.go",
+    "internal/indexer/scanner.go",
+    "internal/indexer/indexer.go",
+    "internal/indexer/scanner_test.go",
+    "internal/db/queries_test.go"
+  ],
+  "forbiddenPaths": [],
+  "priority": 9,
+  "status": "pending",
+  "maxRetries": 2
+}
