@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/mihai/ccs/internal/opener"
 	"github.com/spf13/cobra"
@@ -31,7 +32,7 @@ func newTagCmd() *cobra.Command {
 			}
 
 			name := sessionDisplayName(session.Name, session.ID)
-			fmt.Printf("Tagged %s with: %s\n", name, fmt.Sprint(args[1:]))
+			fmt.Printf("Tagged %s with: %s\n", name, strings.Join(args[1:], ", "))
 			return nil
 		},
 	}
@@ -62,7 +63,7 @@ func newUntagCmd() *cobra.Command {
 			}
 
 			name := sessionDisplayName(session.Name, session.ID)
-			fmt.Printf("Removed tags from %s: %s\n", name, fmt.Sprint(args[1:]))
+			fmt.Printf("Removed tags from %s: %s\n", name, strings.Join(args[1:], ", "))
 			return nil
 		},
 	}
