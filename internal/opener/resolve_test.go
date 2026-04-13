@@ -85,6 +85,11 @@ func TestResolveSession_IDPrefixAmbiguous(t *testing.T) {
 	if len(ambErr.Matches) != 2 {
 		t.Errorf("expected 2 matches, got %d", len(ambErr.Matches))
 	}
+	// Error message must list the candidate session IDs.
+	msg := ambErr.Error()
+	if !strings.Contains(msg, "abcd-1111") || !strings.Contains(msg, "abcd-2222") {
+		t.Errorf("error message %q should list candidate IDs", msg)
+	}
 }
 
 func TestResolveSession_ExactName(t *testing.T) {

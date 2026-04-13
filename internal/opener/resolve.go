@@ -16,7 +16,16 @@ type ErrAmbiguous struct {
 }
 
 func (e *ErrAmbiguous) Error() string {
-	return fmt.Sprintf("identifier %q is ambiguous — matches %d sessions", e.Identifier, len(e.Matches))
+	candidates := make([]string, len(e.Matches))
+	for i, m := range e.Matches {
+		label := m.ID
+		if m.Name != "" {
+			label = fmt.Sprintf("%s (%s)", m.ID, m.Name)
+		}
+		candidates[i] = label
+	}
+	return fmt.Sprintf("identifier %q is ambiguous — matches %d sessions: %s",
+		e.Identifier, len(e.Matches), strings.Join(candidates, ", "))
 }
 
 // ErrNotFound is returned when no session matches the given identifier.
