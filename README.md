@@ -2,7 +2,7 @@
 
 [![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&logoColor=white)](https://go.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mihaiandrei12234/ccs)](https://goreportcard.com/report/github.com/mihaiandrei12234/ccs)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mihai-valentin/ccs)](https://goreportcard.com/report/github.com/mihai-valentin/ccs)
 
 A fast CLI tool for managing [Claude Code](https://claude.ai/claude-code) sessions. List, search, tag, group by project, and resume sessions — all from your terminal.
 
@@ -24,7 +24,7 @@ Requires [Go 1.22+](https://go.dev/dl/).
 
 ```bash
 # Clone the repository
-git clone https://github.com/mihaiandrei12234/ccs.git
+git clone https://github.com/mihai-valentin/ccs.git
 cd ccs
 
 # Build the binary
@@ -137,6 +137,10 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 - Code style guidelines
 - Branch naming conventions
 - Submitting pull requests
+
+## Built with AI
+
+This project was 100% generated using [Claude Code](https://claude.ai/claude-code) (Anthropic's CLI coding agent) and [Shawarma](https://github.com/mihai-valentin/shawarma) — a custom multi-agent orchestration tool that parallelizes development tasks across isolated git worktrees. From design spec to implementation, bug fixes, and CI/CD pipeline — every line of code was written by AI agents.
 
 ## License
 

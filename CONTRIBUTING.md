@@ -120,6 +120,10 @@ Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`
 - Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md) for new ideas
 - Search existing issues before creating a new one
 
+## AI Agents Welcome
+
+This project was built entirely by AI agents and we welcome AI-assisted contributions. If you're using Claude Code, Copilot, Cursor, or any other AI coding tool to prepare your PR — great, no need to hide it. Just make sure the code compiles, tests pass, and the PR description accurately describes the changes.
+
 ## Questions?
 
 Open a discussion or issue if something is unclear. We're happy to help!
