@@ -131,6 +131,40 @@ func TestParseSessionFile_EmptyFile(t *testing.T) {
 	}
 }
 
+func TestParseSessionFile_LastTimeOnlyFromMessages(t *testing.T) {
+	dir := t.TempDir()
+	// The last entries are non-message types (permission-mode, file-history-snapshot)
+	// with timestamps later than the last user/assistant entry.
+	// LastTime should reflect the last user/assistant entry, not these.
+	path := writeTempJSONL(t, dir, "lasttime.jsonl", `{"sessionId":"lt-001","cwd":"/home","timestamp":"2026-04-01T09:00:00Z","type":"user","message":{"role":"user","content":"hello"}}
+{"sessionId":"lt-001","cwd":"/home","timestamp":"2026-04-01T09:05:00Z","type":"assistant","message":{"role":"assistant","content":"hi there"}}
+{"sessionId":"lt-001","cwd":"/home","timestamp":"2026-04-01T09:10:00Z","type":"permission-mode","message":{"role":"user","content":"allow all"}}
+{"sessionId":"lt-001","cwd":"/home","timestamp":"2026-04-01T09:15:00Z","type":"file-history-snapshot","message":{"role":"assistant","content":"snapshot data"}}
+`)
+
+	parsed, err := ParseSessionFile(path)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if parsed == nil {
+		t.Fatal("expected parsed result, got nil")
+	}
+
+	// LastTime should be the assistant entry at 09:05, not the later non-message entries.
+	wantLastTime := "2026-04-01T09:05:00Z"
+	gotLastTime := parsed.LastTime.Format("2006-01-02T15:04:05Z")
+	if gotLastTime != wantLastTime {
+		t.Errorf("LastTime = %s, want %s (should only track user/assistant entries)", gotLastTime, wantLastTime)
+	}
+
+	// FirstTime should still capture the very first entry regardless of type.
+	wantFirstTime := "2026-04-01T09:00:00Z"
+	gotFirstTime := parsed.FirstTime.Format("2006-01-02T15:04:05Z")
+	if gotFirstTime != wantFirstTime {
+		t.Errorf("FirstTime = %s, want %s", gotFirstTime, wantFirstTime)
+	}
+}
+
 func TestParseSessionFile_SkipsNonMessageTypes(t *testing.T) {
 	dir := t.TempDir()
 	path := writeTempJSONL(t, dir, "mixed.jsonl", `{"sessionId":"mix-001","cwd":"/home","timestamp":"2026-04-01T09:00:00Z","type":"permission-mode","message":{"role":"user","content":"allow all"}}

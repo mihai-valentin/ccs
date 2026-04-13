@@ -56,6 +56,15 @@ func (idx *Indexer) run(force bool) error {
 		}
 	}
 
+	// Wrap all upserts and the purge in a single transaction so the DB
+	// is never left in a half-updated state (e.g. if the process is killed
+	// mid-index or a write fails).
+	tx, err := idx.db.Begin()
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+	defer tx.Rollback() // no-op after Commit
+
 	for _, f := range files {
 		if !force {
 			if existing, ok := dbMeta[f.SessionID]; ok {
@@ -89,7 +98,7 @@ func (idx *Indexer) run(force bool) error {
 			FileModTime:  f.FileModTime,
 		}
 
-		if err := idx.db.UpsertSession(session); err != nil {
+		if err := idx.db.UpsertSessionTx(tx, session); err != nil {
 			log.Printf("warning: failed to upsert session %s: %v", parsed.SessionID, err)
 			continue
 		}
@@ -102,9 +111,13 @@ func (idx *Indexer) run(force bool) error {
 	if scanHadErrors {
 		log.Printf("warning: skipping purge of missing sessions because scan encountered errors (partial results)")
 	} else {
-		if err := idx.db.PurgeMissingSessions(existingIDs); err != nil {
+		if err := idx.db.PurgeMissingSessionsTx(tx, existingIDs); err != nil {
 			return fmt.Errorf("purge missing sessions: %w", err)
 		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
 	}
 
 	return nil

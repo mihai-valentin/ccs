@@ -75,22 +75,29 @@ func ParseSessionFile(path string) (*ParsedSession, error) {
 		}
 
 		// Parse timestamp.
+		var ts time.Time
 		if entry.Timestamp != "" {
-			ts, err := time.Parse(time.RFC3339Nano, entry.Timestamp)
+			parsed, err := time.Parse(time.RFC3339Nano, entry.Timestamp)
 			if err != nil {
-				ts, err = time.Parse(time.RFC3339, entry.Timestamp)
+				parsed, err = time.Parse(time.RFC3339, entry.Timestamp)
 			}
 			if err == nil {
+				ts = parsed
 				if p.FirstTime.IsZero() {
 					p.FirstTime = ts
 				}
-				p.LastTime = ts
 			}
 		}
 
 		// Only count user/assistant messages.
 		if entry.Type != "user" && entry.Type != "assistant" {
 			continue
+		}
+
+		// Track LastTime only from user/assistant entries so that
+		// permission-mode / file-history-snapshot entries don't inflate it.
+		if !ts.IsZero() {
+			p.LastTime = ts
 		}
 
 		if len(entry.Message) == 0 {

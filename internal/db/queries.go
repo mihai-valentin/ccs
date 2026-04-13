@@ -38,27 +38,40 @@ func fromNull(ns sql.NullString) string {
 	return ""
 }
 
-// UpsertSession inserts or updates a session record.
-func (d *DB) UpsertSession(s *model.Session) error {
-	_, err := d.Exec(`
-		INSERT INTO sessions (id, project_dir, cwd, git_branch, name, first_message, last_message, message_count, created_at, updated_at, file_size, file_mod_time)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-		ON CONFLICT(id) DO UPDATE SET
-			project_dir = excluded.project_dir,
-			cwd = excluded.cwd,
-			git_branch = excluded.git_branch,
-			name = excluded.name,
-			first_message = excluded.first_message,
-			last_message = excluded.last_message,
-			message_count = excluded.message_count,
-			created_at = excluded.created_at,
-			updated_at = excluded.updated_at,
-			file_size = excluded.file_size,
-			file_mod_time = excluded.file_mod_time`,
+// upsertSessionSQL is the shared upsert query used by both UpsertSession and UpsertSessionTx.
+const upsertSessionSQL = `
+	INSERT INTO sessions (id, project_dir, cwd, git_branch, name, first_message, last_message, message_count, created_at, updated_at, file_size, file_mod_time)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	ON CONFLICT(id) DO UPDATE SET
+		project_dir = excluded.project_dir,
+		cwd = excluded.cwd,
+		git_branch = excluded.git_branch,
+		name = excluded.name,
+		first_message = excluded.first_message,
+		last_message = excluded.last_message,
+		message_count = excluded.message_count,
+		created_at = excluded.created_at,
+		updated_at = excluded.updated_at,
+		file_size = excluded.file_size,
+		file_mod_time = excluded.file_mod_time`
+
+func upsertSessionArgs(s *model.Session) []any {
+	return []any{
 		s.ID, s.ProjectDir, s.Cwd, nullStr(s.GitBranch), nullStr(s.Name),
 		nullStr(s.FirstMessage), nullStr(s.LastMessage), s.MessageCount,
 		formatTime(s.CreatedAt), formatTime(s.UpdatedAt), s.FileSize, formatTime(s.FileModTime),
-	)
+	}
+}
+
+// UpsertSession inserts or updates a session record.
+func (d *DB) UpsertSession(s *model.Session) error {
+	_, err := d.Exec(upsertSessionSQL, upsertSessionArgs(s)...)
+	return err
+}
+
+// UpsertSessionTx inserts or updates a session record within the given transaction.
+func (d *DB) UpsertSessionTx(tx *sql.Tx, s *model.Session) error {
+	_, err := tx.Exec(upsertSessionSQL, upsertSessionArgs(s)...)
 	return err
 }
 
@@ -305,6 +318,26 @@ func (d *DB) PurgeMissingSessions(existingIDs []string) error {
 	}
 
 	_, err := d.Exec(
+		fmt.Sprintf("DELETE FROM sessions WHERE id NOT IN (%s)", strings.Join(placeholders, ",")),
+		args...,
+	)
+	return err
+}
+
+// PurgeMissingSessionsTx is like PurgeMissingSessions but runs within the given transaction.
+func (d *DB) PurgeMissingSessionsTx(tx *sql.Tx, existingIDs []string) error {
+	if len(existingIDs) == 0 {
+		return nil
+	}
+
+	placeholders := make([]string, len(existingIDs))
+	args := make([]any, len(existingIDs))
+	for i, id := range existingIDs {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+
+	_, err := tx.Exec(
 		fmt.Sprintf("DELETE FROM sessions WHERE id NOT IN (%s)", strings.Join(placeholders, ",")),
 		args...,
 	)
