@@ -1,0 +1,41 @@
+{
+  "id": "ccs-04-cli-commands",
+  "projectId": "ccs",
+  "title": "All CLI subcommands: list, search, show, open, tag, delete, etc.",
+  "description": "Implement all cobra CLI subcommands and wire them into the root command in main.go.\n\nRefer to docs/superpowers/specs/2026-04-13-ccs-design.md for the full command spec.\n\nThis task depends on ccs-01-foundation (model, db), ccs-02-indexer, and ccs-03-opener.\n\nKey context:\n- Every command that reads sessions should call indexer.Sync() first to ensure the DB is fresh\n- Default DB path: ~/.config/ccs/ccs.db\n- Default Claude dir: ~/.claude\n- Output: human-readable table by default, JSON with --json flag\n- Use tabwriter or lipgloss for table formatting\n- Relative timestamps: '2h ago', '3d ago', etc.\n- For delete: prompt for confirmation unless --force",
+  "requirements": [
+    "Create internal/cli/root.go that builds the root cobra.Command and attaches all subcommands. Export a func Execute() for main.go to call",
+    "Update cmd/ccs/main.go to call cli.Execute()",
+    "Create internal/cli/list.go — 'ccs list' with flags: --all/-a, --project/-p, --tag/-t (repeatable), --limit/-n (default 20), --sort (updated|created|name), --json",
+    "Create internal/cli/search.go — 'ccs search <query>' with --all/-a, --tag/-t, --json. Search across name, first_message, last_message, cwd, git_branch",
+    "Create internal/cli/show.go — 'ccs show <id|name>' displays full session details: metadata, tags, message previews. Supports --json",
+    "Create internal/cli/open.go — 'ccs open <id|name>' with --new-terminal flag. Uses opener.ResolveSession then opener.OpenSession",
+    "Create internal/cli/tag.go — 'ccs tag <id|name> <tag> [tags...]' adds tags. 'ccs untag <id|name> <tag> [tags...]' removes tags",
+    "Create internal/cli/tags.go — 'ccs tags' lists all tags with session counts",
+    "Create internal/cli/projects.go — 'ccs projects' lists all known projects with session counts",
+    "Create internal/cli/delete.go — 'ccs delete <id|name>' with --force/-f. Deletes JSONL file from disk AND removes from index. Prompts for confirmation without --force",
+    "Create internal/cli/reindex.go — 'ccs reindex' forces full re-index",
+    "Create internal/cli/completion.go — 'ccs completion <bash|zsh|fish>' using cobra's built-in completion generation",
+    "Create a helper internal/cli/helpers.go with shared functions: formatRelativeTime(t time.Time) string, printTable, printJSON, getDB, getIndexer",
+    "Verify the project compiles with 'go build ./cmd/ccs/' and all tests pass with 'go test ./...'"
+  ],
+  "allowedPaths": [
+    "cmd/ccs/main.go",
+    "internal/cli/root.go",
+    "internal/cli/list.go",
+    "internal/cli/search.go",
+    "internal/cli/show.go",
+    "internal/cli/open.go",
+    "internal/cli/tag.go",
+    "internal/cli/tags.go",
+    "internal/cli/projects.go",
+    "internal/cli/delete.go",
+    "internal/cli/reindex.go",
+    "internal/cli/completion.go",
+    "internal/cli/helpers.go"
+  ],
+  "forbiddenPaths": [],
+  "priority": 5,
+  "status": "blocked",
+  "maxRetries": 2
+}

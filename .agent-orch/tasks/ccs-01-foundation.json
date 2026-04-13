@@ -1,0 +1,31 @@
+{
+  "id": "ccs-01-foundation",
+  "projectId": "ccs",
+  "title": "Project scaffold: go.mod, models, DB, Makefile",
+  "description": "Set up the Go project foundation: module init, data model structs, SQLite database layer with schema and queries, and the Makefile.\n\nThis is the foundational task — all other tasks depend on the packages created here.\n\nRefer to the design spec at docs/superpowers/specs/2026-04-13-ccs-design.md for full schema and structure details.\n\nKey context:\n- Use modernc.org/sqlite (pure Go, no CGO)\n- DB location: ~/.config/ccs/ccs.db (create parent dirs on first open)\n- The model package defines Session and Tag structs\n- The db package handles connection, schema auto-migration on open, and all query functions (CRUD for sessions, tags, session_tags)\n- Use github.com/spf13/cobra for CLI (just the root command in main.go for now)",
+  "requirements": [
+    "Initialize go.mod with module name 'github.com/mihai/ccs' and Go 1.22+",
+    "Create internal/model/model.go with Session struct (ID, ProjectDir, Cwd, GitBranch, Name, FirstMessage, LastMessage, MessageCount, CreatedAt, UpdatedAt, FileSize, FileModTime) and Tag struct (ID, Name) — use time.Time for timestamps, int64 for sizes",
+    "Create internal/db/db.go with Open(dbPath string) function that opens/creates SQLite DB, runs migrations, returns *DB wrapper",
+    "Create internal/db/schema.go with the CREATE TABLE statements from the spec (sessions, tags, session_tags tables with indexes)",
+    "Create internal/db/queries.go with query functions: UpsertSession, DeleteSession, GetSessionByID, ListSessions(filters), SearchSessions(query), AddTag, RemoveTag, ListTags, GetSessionTags, ListProjects, PurgeMissingSessions(existingIDs []string)",
+    "Create cmd/ccs/main.go with cobra root command (name 'ccs', description 'Claude Code Session Manager') — no subcommands yet, just the skeleton",
+    "Create Makefile with targets: build (to bin/ccs), install (to ~/go/bin/), test (go test ./...), lint (go vet ./... && gofmt check), clean",
+    "Run go mod tidy to fetch dependencies",
+    "Verify the project compiles with 'go build ./cmd/ccs/' and tests pass with 'go test ./...'"
+  ],
+  "allowedPaths": [
+    "go.mod",
+    "go.sum",
+    "Makefile",
+    "cmd/ccs/main.go",
+    "internal/model/model.go",
+    "internal/db/db.go",
+    "internal/db/schema.go",
+    "internal/db/queries.go"
+  ],
+  "forbiddenPaths": [],
+  "priority": 9,
+  "status": "pending",
+  "maxRetries": 2
+}
