@@ -1,5 +1,9 @@
 # ccs — Claude Code Session Manager
 
+[![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&logoColor=white)](https://go.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mihaiandrei12234/ccs)](https://goreportcard.com/report/github.com/mihaiandrei12234/ccs)
+
 A fast CLI tool for managing [Claude Code](https://claude.ai/claude-code) sessions. List, search, tag, group by project, and resume sessions — all from your terminal.
 
 ## Features
@@ -14,14 +18,29 @@ A fast CLI tool for managing [Claude Code](https://claude.ai/claude-code) sessio
 
 ## Install
 
+### From source
+
+Requires [Go 1.22+](https://go.dev/dl/).
+
 ```bash
-# Clone and build
-git clone <repo-url> && cd cc-session
-make build      # Output: ./bin/ccs
-make install    # Copies to ~/go/bin/ccs
+# Clone the repository
+git clone https://github.com/mihaiandrei12234/ccs.git
+cd ccs
+
+# Build the binary
+make build        # Output: ./bin/ccs
+
+# Or install directly to your GOPATH
+make install      # Installs to ~/go/bin/ccs
 ```
 
-Requires Go 1.22+.
+### Manual build (without Make)
+
+```bash
+go build -o bin/ccs ./cmd/ccs/
+```
+
+Make sure `~/go/bin` (or your `GOPATH/bin`) is in your `PATH`.
 
 ## Usage
 
@@ -109,6 +128,16 @@ Claude Code stores session data as JSONL files in `~/.claude/projects/`. `ccs` s
 
 Tags and labels are stored in the SQLite database only; `ccs` never modifies Claude Code's files.
 
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on:
+
+- Setting up the development environment
+- Running tests
+- Code style guidelines
+- Branch naming conventions
+- Submitting pull requests
+
 ## License
 
-MIT
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
