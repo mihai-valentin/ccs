@@ -140,7 +140,7 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 
 ## Built with AI
 
-This project was 100% generated using [Claude Code](https://claude.ai/claude-code) (Anthropic's CLI coding agent) and [Shawarma](https://github.com/mihai-valentin/shawarma) — a custom multi-agent orchestration tool that parallelizes development tasks across isolated git worktrees. From design spec to implementation, bug fixes, and CI/CD pipeline — every line of code was written by AI agents.
+This project was 100% generated using [Claude Code](https://claude.ai/claude-code) (Anthropic's CLI coding agent) and a custom multi-agent orchestration tool that parallelizes development tasks across isolated git worktrees. From design spec to implementation, bug fixes, and CI/CD pipeline — every line of code was written by AI agents.
 
 ## License
 
