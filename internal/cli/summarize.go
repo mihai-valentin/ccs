@@ -36,7 +36,10 @@ func newSummarizeCmd() *cobra.Command {
 				return err
 			}
 
-			claudeDir := getClaudeDir()
+			claudeDir, err := getClaudeDir()
+			if err != nil {
+				return err
+			}
 
 			if all {
 				return summarizeAllSessions(d, client, claudeDir, force)

@@ -18,7 +18,11 @@ func newReindexCmd() *cobra.Command {
 			}
 			defer d.Close()
 
-			idx := indexer.NewIndexer(d, getClaudeDir())
+			claudeDir, err := getClaudeDir()
+			if err != nil {
+				return err
+			}
+			idx := indexer.NewIndexer(d, claudeDir)
 			if err := idx.Reindex(); err != nil {
 				return fmt.Errorf("reindexing: %w", err)
 			}

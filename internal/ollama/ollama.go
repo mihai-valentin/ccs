@@ -79,6 +79,9 @@ func (c *Client) Ping() error {
 	if err != nil {
 		return fmt.Errorf("cannot reach Ollama at %s: %w", c.BaseURL, err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("ollama returned status %d at %s", resp.StatusCode, c.BaseURL)
+	}
 	return nil
 }

@@ -44,7 +44,11 @@ func newDeleteCmd() *cobra.Command {
 			}
 
 			// Delete the JSONL file from disk
-			jsonlPath := filepath.Join(getClaudeDir(), "projects", session.ProjectDir, session.ID+".jsonl")
+			claudeDir, err := getClaudeDir()
+			if err != nil {
+				return err
+			}
+			jsonlPath := filepath.Join(claudeDir, "projects", session.ProjectDir, session.ID+".jsonl")
 			if err := os.Remove(jsonlPath); err != nil && !os.IsNotExist(err) {
 				return fmt.Errorf("removing JSONL file: %w", err)
 			}

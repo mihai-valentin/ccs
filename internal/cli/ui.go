@@ -34,7 +34,11 @@ func newUICmd() *cobra.Command {
 				return fmt.Errorf("loading sessions: %w", err)
 			}
 
-			m := tui.NewModel(sessions, d, getClaudeDir())
+			claudeDir, err := getClaudeDir()
+			if err != nil {
+				return err
+			}
+			m := tui.NewModel(sessions, d, claudeDir)
 
 			p := tea.NewProgram(m, tea.WithAltScreen())
 			finalModel, err := p.Run()

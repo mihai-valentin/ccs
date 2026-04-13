@@ -16,7 +16,7 @@ import (
 func OpenSession(session model.Session, newTerminal bool) error {
 	if _, err := os.Stat(session.Cwd); os.IsNotExist(err) {
 		return fmt.Errorf(
-			"session directory %q no longer exists; use --cwd to open in the current directory instead",
+			"the original working directory no longer exists: %s",
 			session.Cwd,
 		)
 	}

@@ -18,32 +18,42 @@ var (
 	flagClaudeDir string
 )
 
-func defaultDBPath() string {
-	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".config", "ccs", "ccs.db")
+func defaultDBPath() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("cannot determine home directory: %w", err)
+	}
+	return filepath.Join(home, ".config", "ccs", "ccs.db"), nil
 }
 
-func defaultClaudeDir() string {
-	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".claude")
+func defaultClaudeDir() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("cannot determine home directory: %w", err)
+	}
+	return filepath.Join(home, ".claude"), nil
 }
 
-func getDBPath() string {
+func getDBPath() (string, error) {
 	if flagDBPath != "" {
-		return flagDBPath
+		return flagDBPath, nil
 	}
 	return defaultDBPath()
 }
 
-func getClaudeDir() string {
+func getClaudeDir() (string, error) {
 	if flagClaudeDir != "" {
-		return flagClaudeDir
+		return flagClaudeDir, nil
 	}
 	return defaultClaudeDir()
 }
 
 func openDB() (*db.DB, error) {
-	return db.Open(getDBPath())
+	dbPath, err := getDBPath()
+	if err != nil {
+		return nil, err
+	}
+	return db.Open(dbPath)
 }
 
 func syncIndex() (*db.DB, error) {
@@ -51,7 +61,12 @@ func syncIndex() (*db.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("opening database: %w", err)
 	}
-	idx := indexer.NewIndexer(d, getClaudeDir())
+	claudeDir, err := getClaudeDir()
+	if err != nil {
+		d.Close()
+		return nil, err
+	}
+	idx := indexer.NewIndexer(d, claudeDir)
 	if err := idx.Run(); err != nil {
 		d.Close()
 		return nil, fmt.Errorf("syncing index: %w", err)
