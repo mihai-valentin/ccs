@@ -56,7 +56,7 @@ func (m Model) viewDetail() string {
 	}
 
 	if s.Summary != "" {
-		lines = append(lines, detailLabelStyle.Render("Sum:   ")+detailValueStyle.Render(truncateStr(s.Summary, maxValWidth)))
+		lines = append(lines, detailLabelStyle.Render("Summary: ")+detailValueStyle.Render(truncateStr(s.Summary, maxValWidth)))
 	}
 
 	lines = append(lines,
