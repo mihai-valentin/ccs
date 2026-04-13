@@ -264,6 +264,65 @@ func (d *DB) ListProjects() ([]string, error) {
 	return projects, rows.Err()
 }
 
+// ProjectCount holds a project name and its session count.
+type ProjectCount struct {
+	Name  string
+	Count int
+}
+
+// ListProjectsWithCounts returns all project directories with their session counts.
+func (d *DB) ListProjectsWithCounts() ([]ProjectCount, error) {
+	rows, err := d.Query(`
+		SELECT project_dir, COUNT(*) as cnt
+		FROM sessions
+		GROUP BY project_dir
+		ORDER BY project_dir`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var projects []ProjectCount
+	for rows.Next() {
+		var p ProjectCount
+		if err := rows.Scan(&p.Name, &p.Count); err != nil {
+			return nil, err
+		}
+		projects = append(projects, p)
+	}
+	return projects, rows.Err()
+}
+
+// TagCount holds a tag name and its session count.
+type TagCount struct {
+	Name  string
+	Count int
+}
+
+// ListTagsWithCounts returns all tags with their associated session counts.
+func (d *DB) ListTagsWithCounts() ([]TagCount, error) {
+	rows, err := d.Query(`
+		SELECT t.name, COUNT(st.session_id) as cnt
+		FROM tags t
+		LEFT JOIN session_tags st ON t.id = st.tag_id
+		GROUP BY t.id, t.name
+		ORDER BY t.name`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tags []TagCount
+	for rows.Next() {
+		var t TagCount
+		if err := rows.Scan(&t.Name, &t.Count); err != nil {
+			return nil, err
+		}
+		tags = append(tags, t)
+	}
+	return tags, rows.Err()
+}
+
 // SessionMeta holds the minimal file-level metadata needed for incremental
 // indexing change detection.
 type SessionMeta struct {

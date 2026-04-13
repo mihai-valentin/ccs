@@ -24,26 +24,14 @@ func newProjectsCmd() *cobra.Command {
 			}
 			defer d.Close()
 
-			rows, err := d.Query(`
-				SELECT project_dir, COUNT(*) as cnt
-				FROM sessions
-				GROUP BY project_dir
-				ORDER BY project_dir`)
+			dbProjects, err := d.ListProjectsWithCounts()
 			if err != nil {
 				return fmt.Errorf("listing projects: %w", err)
 			}
-			defer rows.Close()
 
-			var projects []projectWithCount
-			for rows.Next() {
-				var p projectWithCount
-				if err := rows.Scan(&p.Name, &p.Count); err != nil {
-					return err
-				}
-				projects = append(projects, p)
-			}
-			if err := rows.Err(); err != nil {
-				return err
+			projects := make([]projectWithCount, len(dbProjects))
+			for i, p := range dbProjects {
+				projects[i] = projectWithCount{Name: p.Name, Count: p.Count}
 			}
 
 			if jsonOut {

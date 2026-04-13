@@ -61,8 +61,15 @@ func newSearchCmd() *cobra.Command {
 
 			// Filter by current project if not --all
 			if !all {
-				// No project filter in search — show all by default
-				// The --all flag is a no-op for search but included for consistency
+				if projDir, err := detectProjectDir(); err == nil && projDir != "" {
+					var filtered []model.Session
+					for _, s := range sessions {
+						if s.ProjectDir == projDir {
+							filtered = append(filtered, s)
+						}
+					}
+					sessions = filtered
+				}
 			}
 
 			if jsonOut {

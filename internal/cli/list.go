@@ -106,5 +106,5 @@ func detectProjectDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return strings.ReplaceAll(cwd, string(os.PathSeparator), "-"), nil
+	return strings.ReplaceAll(cwd, "/", "-"), nil
 }

@@ -24,27 +24,14 @@ func newTagsCmd() *cobra.Command {
 			}
 			defer d.Close()
 
-			rows, err := d.Query(`
-				SELECT t.name, COUNT(st.session_id) as cnt
-				FROM tags t
-				LEFT JOIN session_tags st ON t.id = st.tag_id
-				GROUP BY t.id, t.name
-				ORDER BY t.name`)
+			dbTags, err := d.ListTagsWithCounts()
 			if err != nil {
 				return fmt.Errorf("listing tags: %w", err)
 			}
-			defer rows.Close()
 
-			var tags []tagWithCount
-			for rows.Next() {
-				var t tagWithCount
-				if err := rows.Scan(&t.Name, &t.Count); err != nil {
-					return err
-				}
-				tags = append(tags, t)
-			}
-			if err := rows.Err(); err != nil {
-				return err
+			tags := make([]tagWithCount, len(dbTags))
+			for i, t := range dbTags {
+				tags[i] = tagWithCount{Name: t.Name, Count: t.Count}
 			}
 
 			if jsonOut {
