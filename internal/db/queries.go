@@ -35,6 +35,9 @@ func fromNull(ns sql.NullString) string {
 }
 
 // upsertSessionSQL is the shared upsert query used by both UpsertSession and UpsertSessionTx.
+// Note: the summary column is intentionally omitted from both INSERT and ON CONFLICT UPDATE
+// so that re-indexing does not overwrite user-generated or AI-generated summaries stored
+// via UpdateSummary.
 const upsertSessionSQL = `
 	INSERT INTO sessions (id, project_dir, cwd, git_branch, name, first_message, last_message, message_count, created_at, updated_at, file_size, file_mod_time)
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -172,6 +175,11 @@ func (d *DB) ListSessions(f model.SessionFilter) ([]model.Session, error) {
 
 // SearchSessions performs a text search across name, messages, cwd, and branch.
 func (d *DB) SearchSessions(query string) ([]model.Session, error) {
+	// Truncate to prevent unbounded LIKE patterns that could degrade performance.
+	const maxQueryLen = 500
+	if len(query) > maxQueryLen {
+		query = query[:maxQueryLen]
+	}
 	pattern := "%" + query + "%"
 	rows, err := d.Query(`
 		SELECT id, project_dir, cwd, git_branch, name, first_message, last_message,
