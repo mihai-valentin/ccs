@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mihai/ccs/internal/indexer"
 	"github.com/mihai/ccs/internal/ollama"
 )
 
@@ -16,16 +17,6 @@ const (
 	tailMessages = 5
 	maxMsgLen    = 300
 )
-
-type jsonlEntry struct {
-	Type    string          `json:"type"`
-	Message json.RawMessage `json:"message"`
-}
-
-type messageObj struct {
-	Role    string          `json:"role"`
-	Content json.RawMessage `json:"content"`
-}
 
 // Summarize reads a session JSONL file, extracts key messages, and generates
 // a summary via the given Ollama client.
@@ -72,7 +63,7 @@ func extractMessages(path string) ([]message, error) {
 			continue
 		}
 
-		var entry jsonlEntry
+		var entry indexer.JsonlEntry
 		if err := json.Unmarshal(line, &entry); err != nil {
 			continue
 		}
@@ -84,7 +75,7 @@ func extractMessages(path string) ([]message, error) {
 			continue
 		}
 
-		var msg messageObj
+		var msg indexer.MessageObj
 		if err := json.Unmarshal(entry.Message, &msg); err != nil {
 			continue
 		}
@@ -92,7 +83,7 @@ func extractMessages(path string) ([]message, error) {
 			continue
 		}
 
-		content := extractContent(msg.Content)
+		content := indexer.ExtractContent(msg.Content)
 		if content == "" {
 			continue
 		}
@@ -157,36 +148,3 @@ func buildPrompt(messages []message) string {
 	return sb.String()
 }
 
-func extractContent(raw json.RawMessage) string {
-	if len(raw) == 0 {
-		return ""
-	}
-
-	var s string
-	if err := json.Unmarshal(raw, &s); err == nil {
-		return s
-	}
-
-	var blocks []json.RawMessage
-	if err := json.Unmarshal(raw, &blocks); err != nil {
-		return ""
-	}
-
-	var result string
-	for _, block := range blocks {
-		var cb struct {
-			Type string `json:"type"`
-			Text string `json:"text"`
-		}
-		if err := json.Unmarshal(block, &cb); err != nil {
-			continue
-		}
-		if cb.Type == "text" && cb.Text != "" {
-			if result != "" {
-				result += " "
-			}
-			result += cb.Text
-		}
-	}
-	return result
-}

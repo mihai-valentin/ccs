@@ -21,8 +21,8 @@ type ParsedSession struct {
 	LastTime     time.Time
 }
 
-// jsonlEntry represents one line in a CC session JSONL file.
-type jsonlEntry struct {
+// JsonlEntry represents one line in a CC session JSONL file.
+type JsonlEntry struct {
 	SessionID string          `json:"sessionId"`
 	Cwd       string          `json:"cwd"`
 	Timestamp string          `json:"timestamp"`
@@ -33,7 +33,8 @@ type jsonlEntry struct {
 	Message   json.RawMessage `json:"message"`
 }
 
-type messageObj struct {
+// MessageObj represents a parsed message with role and content.
+type MessageObj struct {
 	Role    string          `json:"role"`
 	Content json.RawMessage `json:"content"`
 }
@@ -56,7 +57,7 @@ func ParseSessionFile(path string) (*ParsedSession, error) {
 			continue
 		}
 
-		var entry jsonlEntry
+		var entry JsonlEntry
 		if err := json.Unmarshal(line, &entry); err != nil {
 			continue // skip malformed lines
 		}
@@ -108,7 +109,7 @@ func ParseSessionFile(path string) (*ParsedSession, error) {
 			continue
 		}
 
-		var msg messageObj
+		var msg MessageObj
 		if err := json.Unmarshal(entry.Message, &msg); err != nil {
 			continue
 		}
@@ -117,7 +118,7 @@ func ParseSessionFile(path string) (*ParsedSession, error) {
 			continue
 		}
 
-		content := extractContent(msg.Content)
+		content := ExtractContent(msg.Content)
 		if content == "" {
 			continue
 		}
@@ -141,9 +142,9 @@ func ParseSessionFile(path string) (*ParsedSession, error) {
 	return p, nil
 }
 
-// extractContent handles message.content being either a string or an array
+// ExtractContent handles message.content being either a string or an array
 // of content blocks. For arrays, it concatenates text from blocks with type "text".
-func extractContent(raw json.RawMessage) string {
+func ExtractContent(raw json.RawMessage) string {
 	if len(raw) == 0 {
 		return ""
 	}
