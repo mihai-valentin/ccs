@@ -101,9 +101,9 @@ func (d *DB) GetSessionByID(id string) (*model.Session, error) {
 	s.FirstMessage = fromNull(firstMsg)
 	s.LastMessage = fromNull(lastMsg)
 	s.Summary = fromNull(summary)
-	s.CreatedAt = parseTime(createdAt)
-	s.UpdatedAt = parseTime(updatedAt)
-	s.FileModTime = parseTime(fileModTime)
+	s.CreatedAt = format.ParseTime(createdAt)
+	s.UpdatedAt = format.ParseTime(updatedAt)
+	s.FileModTime = format.ParseTime(fileModTime)
 	return s, nil
 }
 
@@ -291,7 +291,7 @@ func (d *DB) GetAllSessionMeta() (map[string]SessionMeta, error) {
 		}
 		m[id] = SessionMeta{
 			FileSize:    fileSize,
-			FileModTime: parseTime(fileModTime),
+			FileModTime: format.ParseTime(fileModTime),
 		}
 	}
 	return m, rows.Err()
@@ -365,9 +365,9 @@ func scanSessions(rows *sql.Rows) ([]model.Session, error) {
 		s.FirstMessage = fromNull(firstMsg)
 		s.LastMessage = fromNull(lastMsg)
 		s.Summary = fromNull(summary)
-		s.CreatedAt = parseTime(createdAt)
-		s.UpdatedAt = parseTime(updatedAt)
-		s.FileModTime = parseTime(fileModTime)
+		s.CreatedAt = format.ParseTime(createdAt)
+		s.UpdatedAt = format.ParseTime(updatedAt)
+		s.FileModTime = format.ParseTime(fileModTime)
 		sessions = append(sessions, s)
 	}
 	return sessions, rows.Err()

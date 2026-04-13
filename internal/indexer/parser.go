@@ -125,9 +125,9 @@ func ParseSessionFile(path string) (*ParsedSession, error) {
 		p.MessageCount++
 
 		if p.FirstMessage == "" {
-			p.FirstMessage = truncate(content, 200)
+			p.FirstMessage = format.Truncate(content, 200)
 		}
-		p.LastMessage = truncate(content, 200)
+		p.LastMessage = format.Truncate(content, 200)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -177,13 +177,4 @@ func ExtractContent(raw json.RawMessage) string {
 		}
 	}
 	return result
-}
-
-// truncate returns the first n characters of s (rune-aware).
-func truncate(s string, n int) string {
-	runes := []rune(s)
-	if len(runes) <= n {
-		return s
-	}
-	return string(runes[:n])
 }

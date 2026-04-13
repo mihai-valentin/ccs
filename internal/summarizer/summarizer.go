@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mihai/ccs/internal/format"
 	"github.com/mihai/ccs/internal/indexer"
 	"github.com/mihai/ccs/internal/ollama"
 )
@@ -136,10 +137,7 @@ func buildPrompt(messages []message) string {
 	sb.WriteString("--- CONVERSATION EXCERPT ---\n\n")
 
 	for _, m := range messages {
-		content := m.Content
-		if len(content) > maxMsgLen {
-			content = content[:maxMsgLen] + "..."
-		}
+		content := format.Truncate(m.Content, maxMsgLen)
 		sb.WriteString(fmt.Sprintf("[%s]: %s\n\n", m.Role, content))
 	}
 

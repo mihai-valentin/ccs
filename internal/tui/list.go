@@ -3,7 +3,6 @@ package tui
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/mihai/ccs/internal/format"
@@ -84,7 +83,7 @@ func (m Model) renderRow(idx int, s model.Session, colNum, colName, colProject, 
 		project = project[:colProject-4] + "..."
 	}
 
-	updated := formatRelativeTime(s.UpdatedAt)
+	updated := format.FormatRelativeTime(s.UpdatedAt)
 
 	row := fmt.Sprintf("%s%-*d %-*s %-*s %-*s %-*s",
 		marker,
@@ -108,10 +107,7 @@ func (m Model) renderRow(idx int, s model.Session, colNum, colName, colProject, 
 	}
 }
 
-func formatRelativeTime(t time.Time) string {
-	return format.FormatRelativeTime(t)
-}
-
+// truncateStr delegates to format.Truncate for use within the tui package.
 func truncateStr(s string, maxLen int) string {
 	return format.Truncate(s, maxLen)
 }

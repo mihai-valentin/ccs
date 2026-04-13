@@ -1,6 +1,7 @@
 package opener
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 
@@ -146,7 +147,7 @@ func scanResolveRows(rows interface {
 	var sessions []model.Session
 	for rows.Next() {
 		var s model.Session
-		var gitBranch, name, firstMsg, lastMsg, summary nullString
+		var gitBranch, name, firstMsg, lastMsg, summary sql.NullString
 		var createdAt, updatedAt, fileModTime string
 		if err := rows.Scan(
 			&s.ID, &s.ProjectDir, &s.Cwd, &gitBranch, &name,
@@ -155,45 +156,16 @@ func scanResolveRows(rows interface {
 		); err != nil {
 			return nil, err
 		}
-		s.GitBranch = gitBranch.String()
-		s.Name = name.String()
-		s.FirstMessage = firstMsg.String()
-		s.LastMessage = lastMsg.String()
-		s.Summary = summary.String()
+		s.GitBranch = gitBranch.String
+		s.Name = name.String
+		s.FirstMessage = firstMsg.String
+		s.LastMessage = lastMsg.String
+		s.Summary = summary.String
 		s.CreatedAt = format.ParseTime(createdAt)
 		s.UpdatedAt = format.ParseTime(updatedAt)
 		s.FileModTime = format.ParseTime(fileModTime)
 		sessions = append(sessions, s)
 	}
 	return sessions, rows.Err()
-}
-
-// nullString is a minimal nullable string scanner for SQL results.
-type nullString struct {
-	val   string
-	valid bool
-}
-
-func (ns *nullString) Scan(src any) error {
-	if src == nil {
-		ns.val = ""
-		ns.valid = false
-		return nil
-	}
-	switch v := src.(type) {
-	case string:
-		ns.val = v
-		ns.valid = true
-	case []byte:
-		ns.val = string(v)
-		ns.valid = true
-	default:
-		return fmt.Errorf("nullString.Scan: unsupported type %T", src)
-	}
-	return nil
-}
-
-func (ns nullString) String() string {
-	return ns.val
 }
 
