@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -53,12 +55,15 @@ type Model struct {
 	// Database handle (for tag operations)
 	db *db.DB
 
+	// Claude data directory (for JSONL file operations)
+	claudeDir string
+
 	// Result: session to open after TUI exits
 	SessionToOpen *model.Session
 }
 
 // NewModel creates a new TUI model with the given sessions and database handle.
-func NewModel(sessions []model.Session, database *db.DB) Model {
+func NewModel(sessions []model.Session, database *db.DB, claudeDir string) Model {
 	si := textinput.New()
 	si.Placeholder = "search..."
 	si.CharLimit = 100
@@ -89,6 +94,7 @@ func NewModel(sessions []model.Session, database *db.DB) Model {
 		searchInput: si,
 		tagInput:    ti,
 		db:          database,
+		claudeDir:   claudeDir,
 	}
 	m.applyFilters()
 	return m
@@ -251,6 +257,11 @@ func (m Model) updateDeleteConfirm(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			if err := m.db.DeleteSession(session.ID); err != nil {
 				m.statusMsg = "Error deleting session: " + err.Error()
 			} else {
+				// Also remove the JSONL source file so session doesn't reappear on reindex
+				if m.claudeDir != "" {
+					jsonlPath := filepath.Join(m.claudeDir, "projects", session.ProjectDir, session.ID+".jsonl")
+					_ = os.Remove(jsonlPath)
+				}
 				m.statusMsg = "Deleted session: " + sessionDisplayName(session)
 				// Remove from allSessions
 				for i, s := range m.allSessions {
