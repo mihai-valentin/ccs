@@ -3,14 +3,14 @@ package tui
 import "github.com/charmbracelet/lipgloss"
 
 var (
-	// Colors
-	colorPrimary   = lipgloss.Color("#7C3AED") // purple
+	// Colors — colorPrimary and colorSelected are updated by InitTheme.
+	colorPrimary   = lipgloss.Color("#7C3AED") // purple (default)
 	colorSecondary = lipgloss.Color("#06B6D4") // cyan
 	colorMuted     = lipgloss.Color("#6B7280") // gray
 	colorStale     = lipgloss.Color("#9CA3AF") // light gray for >30d old
 	colorTagBg     = lipgloss.Color("#4C1D95") // dark purple
 	colorTagFg     = lipgloss.Color("#DDD6FE") // light purple
-	colorSelected  = lipgloss.Color("#7C3AED")
+	colorSelected  = lipgloss.Color("#7C3AED") // default, overridden by InitTheme
 	colorBorder    = lipgloss.Color("#4B5563")
 	colorError     = lipgloss.Color("#EF4444")
 	colorSuccess   = lipgloss.Color("#10B981")
@@ -114,3 +114,41 @@ var (
 				Foreground(colorError).
 				Bold(true)
 )
+
+// InitTheme updates the accent color used throughout the TUI. Call this
+// before creating a bubbletea Program so that all styles reflect the
+// user's chosen (or auto-generated) theme color.
+func InitTheme(accent lipgloss.Color) {
+	colorPrimary = accent
+	colorSelected = accent
+
+	// Rebuild every style that references the accent color.
+	headerStyle = lipgloss.NewStyle().
+		Bold(true).
+		Foreground(colorPrimary).
+		Padding(0, 1)
+
+	selectedRowStyle = lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#FFFFFF")).
+		Background(colorSelected)
+
+	staleSelectedRowStyle = lipgloss.NewStyle().
+		Bold(true).
+		Foreground(colorStale).
+		Background(colorSelected)
+
+	filterStyle = lipgloss.NewStyle().
+		Foreground(colorPrimary).
+		Bold(true)
+
+	tagDialogStyle = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(colorPrimary).
+		Padding(0, 1)
+
+	helpOverlayStyle = lipgloss.NewStyle().
+		Border(lipgloss.DoubleBorder()).
+		BorderForeground(colorPrimary).
+		Padding(1, 2)
+}

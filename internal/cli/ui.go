@@ -6,6 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mihai/ccs/internal/model"
 	"github.com/mihai/ccs/internal/opener"
+	"github.com/mihai/ccs/internal/theme"
 	"github.com/mihai/ccs/internal/tui"
 	"github.com/spf13/cobra"
 )
@@ -20,6 +21,9 @@ func newUICmd() *cobra.Command {
 				return err
 			}
 			defer d.Close()
+
+			// Apply the user's theme color before building the TUI.
+			tui.InitTheme(theme.GetThemeColor(d))
 
 			// Load all sessions (no limit for TUI)
 			sessions, err := d.ListSessions(model.SessionFilter{
