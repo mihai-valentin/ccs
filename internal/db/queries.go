@@ -113,27 +113,38 @@ func (d *DB) ListSessions(f model.SessionFilter) ([]model.Session, error) {
 	                 s.last_message, s.message_count, s.created_at, s.updated_at,
 	                 s.file_size, s.file_mod_time, s.summary
 	          FROM sessions s`
-	var args []any
+	var joinArgs []any
+	var whereArgs []any
 	var conditions []string
-
-	if f.ProjectDir != "" {
-		conditions = append(conditions, "s.project_dir = ?")
-		args = append(args, f.ProjectDir)
-	}
 
 	if len(f.Tags) > 0 {
 		placeholders := make([]string, len(f.Tags))
 		for i, tag := range f.Tags {
 			placeholders[i] = "?"
-			args = append(args, tag)
+			joinArgs = append(joinArgs, tag)
 		}
 		query += fmt.Sprintf(` JOIN session_tags st ON s.id = st.session_id
 		                        JOIN tags t ON st.tag_id = t.id AND t.name IN (%s)`,
 			strings.Join(placeholders, ","))
 	}
 
+	if f.ProjectDir != "" {
+		conditions = append(conditions, "s.project_dir = ?")
+		whereArgs = append(whereArgs, f.ProjectDir)
+	}
+
+	// Build args in SQL order: JOIN placeholders first, then WHERE placeholders.
+	args := append(joinArgs, whereArgs...)
+
 	if len(conditions) > 0 {
 		query += " WHERE " + strings.Join(conditions, " AND ")
+	}
+
+	// When multiple tags are provided, enforce AND semantics: a session must
+	// have ALL requested tags, not just any one of them.
+	if len(f.Tags) > 0 {
+		query += " GROUP BY s.id"
+		query += fmt.Sprintf(" HAVING COUNT(DISTINCT t.name) = %d", len(f.Tags))
 	}
 
 	switch f.SortBy {
@@ -145,11 +156,14 @@ func (d *DB) ListSessions(f model.SessionFilter) ([]model.Session, error) {
 		query += " ORDER BY s.updated_at DESC"
 	}
 
-	limit := f.Limit
-	if limit <= 0 {
-		limit = 20
+	// Limit == -1 means unlimited; Limit == 0 uses the default of 20.
+	if f.Limit != -1 {
+		limit := f.Limit
+		if limit <= 0 {
+			limit = 20
+		}
+		query += fmt.Sprintf(" LIMIT %d", limit)
 	}
-	query += fmt.Sprintf(" LIMIT %d", limit)
 
 	rows, err := d.Query(query, args...)
 	if err != nil {
@@ -366,6 +380,11 @@ func (d *DB) PurgeMissingSessions(existingIDs []string) error {
 		return nil
 	}
 
+	// For large ID lists, batch into a temp table to avoid SQLite parameter limits.
+	if len(existingIDs) > 500 {
+		return d.purgeMissingBatched(existingIDs)
+	}
+
 	placeholders := make([]string, len(existingIDs))
 	args := make([]any, len(existingIDs))
 	for i, id := range existingIDs {
@@ -380,10 +399,50 @@ func (d *DB) PurgeMissingSessions(existingIDs []string) error {
 	return err
 }
 
+// purgeMissingBatched handles purging when there are more than 500 existing IDs
+// by inserting IDs into a temp table in batches and doing a single NOT IN against it.
+func (d *DB) purgeMissingBatched(existingIDs []string) error {
+	const batchSize = 500
+
+	if _, err := d.Exec("CREATE TEMP TABLE IF NOT EXISTS _keep_ids (id TEXT PRIMARY KEY)"); err != nil {
+		return err
+	}
+	defer d.Exec("DROP TABLE IF EXISTS _keep_ids") //nolint:errcheck
+
+	for i := 0; i < len(existingIDs); i += batchSize {
+		end := i + batchSize
+		if end > len(existingIDs) {
+			end = len(existingIDs)
+		}
+		chunk := existingIDs[i:end]
+		placeholders := make([]string, len(chunk))
+		args := make([]any, len(chunk))
+		for j, id := range chunk {
+			placeholders[j] = "(?)"
+			args[j] = id
+		}
+		_, err := d.Exec(
+			fmt.Sprintf("INSERT OR IGNORE INTO _keep_ids (id) VALUES %s", strings.Join(placeholders, ",")),
+			args...,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err := d.Exec("DELETE FROM sessions WHERE id NOT IN (SELECT id FROM _keep_ids)")
+	return err
+}
+
 // PurgeMissingSessionsTx is like PurgeMissingSessions but runs within the given transaction.
 func (d *DB) PurgeMissingSessionsTx(tx *sql.Tx, existingIDs []string) error {
 	if len(existingIDs) == 0 {
 		return nil
+	}
+
+	// For large ID lists, batch into a temp table to avoid SQLite parameter limits.
+	if len(existingIDs) > 500 {
+		return d.purgeMissingBatchedTx(tx, existingIDs)
 	}
 
 	placeholders := make([]string, len(existingIDs))
@@ -397,6 +456,40 @@ func (d *DB) PurgeMissingSessionsTx(tx *sql.Tx, existingIDs []string) error {
 		fmt.Sprintf("DELETE FROM sessions WHERE id NOT IN (%s)", strings.Join(placeholders, ",")),
 		args...,
 	)
+	return err
+}
+
+// purgeMissingBatchedTx handles purging within a transaction when there are more than 500 existing IDs.
+func (d *DB) purgeMissingBatchedTx(tx *sql.Tx, existingIDs []string) error {
+	const batchSize = 500
+
+	if _, err := tx.Exec("CREATE TEMP TABLE IF NOT EXISTS _keep_ids (id TEXT PRIMARY KEY)"); err != nil {
+		return err
+	}
+	defer tx.Exec("DROP TABLE IF EXISTS _keep_ids") //nolint:errcheck
+
+	for i := 0; i < len(existingIDs); i += batchSize {
+		end := i + batchSize
+		if end > len(existingIDs) {
+			end = len(existingIDs)
+		}
+		chunk := existingIDs[i:end]
+		placeholders := make([]string, len(chunk))
+		args := make([]any, len(chunk))
+		for j, id := range chunk {
+			placeholders[j] = "(?)"
+			args[j] = id
+		}
+		_, err := tx.Exec(
+			fmt.Sprintf("INSERT OR IGNORE INTO _keep_ids (id) VALUES %s", strings.Join(placeholders, ",")),
+			args...,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err := tx.Exec("DELETE FROM sessions WHERE id NOT IN (SELECT id FROM _keep_ids)")
 	return err
 }
 

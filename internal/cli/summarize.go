@@ -94,7 +94,7 @@ func doSummarize(d *db.DB, client *ollama.Client, claudeDir, sessionID, projectD
 }
 
 func summarizeAllSessions(d *db.DB, client *ollama.Client, claudeDir string, force bool) error {
-	sessions, err := d.ListSessions(model.SessionFilter{Limit: 10000})
+	sessions, err := d.ListSessions(model.SessionFilter{Limit: -1})
 	if err != nil {
 		return err
 	}
