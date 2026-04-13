@@ -31,6 +31,7 @@ func NewRootCmd() *cobra.Command {
 		newCompletionCmd(),
 		newUICmd(),
 		newSummarizeCmd(),
+		newThemeCmd(),
 	)
 
 	return rootCmd
