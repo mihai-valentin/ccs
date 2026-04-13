@@ -28,6 +28,7 @@ type jsonlEntry struct {
 	Timestamp string          `json:"timestamp"`
 	GitBranch string          `json:"gitBranch"`
 	Slug      string          `json:"slug"`
+	AgentName string          `json:"agentName"`
 	Type      string          `json:"type"`
 	Message   json.RawMessage `json:"message"`
 }
@@ -70,7 +71,10 @@ func ParseSessionFile(path string) (*ParsedSession, error) {
 		if p.GitBranch == "" && entry.GitBranch != "" {
 			p.GitBranch = entry.GitBranch
 		}
-		if p.Name == "" && entry.Slug != "" {
+		// Prefer user-set agentName (from --name) over auto-generated slug.
+		if entry.AgentName != "" {
+			p.Name = entry.AgentName
+		} else if p.Name == "" && entry.Slug != "" {
 			p.Name = entry.Slug
 		}
 
