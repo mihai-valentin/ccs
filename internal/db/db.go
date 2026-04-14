@@ -20,7 +20,9 @@ type DB struct {
 // if they don't exist.
 func Open(dbPath string) (*DB, error) {
 	dir := filepath.Dir(dbPath)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	// 0o700: the database holds session metadata including cwd paths and
+	// message excerpts. Keep it readable only by the owner.
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, fmt.Errorf("create db directory: %w", err)
 	}
 
