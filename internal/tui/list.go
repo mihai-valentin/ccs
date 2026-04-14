@@ -65,23 +65,13 @@ func (m Model) renderRow(idx int, s model.Session, colNum, colName, colProject, 
 		marker = "> "
 	}
 
-	name := sessionDisplayName(s)
-	if len(name) > colName-1 {
-		name = name[:colName-4] + "..."
-	}
-
+	name := format.Truncate(sessionDisplayName(s), colName-1)
 	branch := s.GitBranch
 	if branch == "" {
 		branch = "-"
 	}
-	if len(branch) > colBranch-1 {
-		branch = branch[:colBranch-4] + "..."
-	}
-
-	project := s.ProjectDir
-	if len(project) > colProject-1 {
-		project = project[:colProject-4] + "..."
-	}
+	branch = format.Truncate(branch, colBranch-1)
+	project := format.Truncate(s.ProjectDir, colProject-1)
 
 	updated := format.FormatRelativeTime(s.UpdatedAt)
 

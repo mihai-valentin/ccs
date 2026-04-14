@@ -35,14 +35,18 @@ func newSearchCmd() *cobra.Command {
 
 			// Filter by tags if specified
 			if len(tags) > 0 {
+				ids := make([]string, len(sessions))
+				for i, s := range sessions {
+					ids[i] = s.ID
+				}
+				tagsByID, err := d.GetTagsForSessions(ids)
+				if err != nil {
+					return fmt.Errorf("loading tags: %w", err)
+				}
 				var filteredSessions []model.Session
 				for _, s := range sessions {
-					sTags, err := d.GetSessionTags(s.ID)
-					if err != nil {
-						continue
-					}
-					tagSet := make(map[string]bool)
-					for _, t := range sTags {
+					tagSet := make(map[string]bool, len(tagsByID[s.ID]))
+					for _, t := range tagsByID[s.ID] {
 						tagSet[t.Name] = true
 					}
 					match := true

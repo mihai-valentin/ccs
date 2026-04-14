@@ -82,10 +82,16 @@ func NewModel(sessions []model.Session, database *db.DB, claudeDir string) Model
 	projectSet := make(map[string]bool)
 	for i := range sessions {
 		projectSet[sessions[i].ProjectDir] = true
-		// Load tags for each session
-		if database != nil {
-			if tags, err := database.GetSessionTags(sessions[i].ID); err == nil {
-				sessions[i].Tags = tags
+	}
+	// Bulk-load tags for all sessions in one (or a few) queries instead of N.
+	if database != nil {
+		ids := make([]string, len(sessions))
+		for i := range sessions {
+			ids[i] = sessions[i].ID
+		}
+		if tagsByID, err := database.GetTagsForSessions(ids); err == nil {
+			for i := range sessions {
+				sessions[i].Tags = tagsByID[sessions[i].ID]
 			}
 		}
 	}
@@ -483,10 +489,16 @@ func (m *Model) refreshTags() {
 	if m.db == nil {
 		return
 	}
+	ids := make([]string, len(m.allSessions))
 	for i := range m.allSessions {
-		if tags, err := m.db.GetSessionTags(m.allSessions[i].ID); err == nil {
-			m.allSessions[i].Tags = tags
-		}
+		ids[i] = m.allSessions[i].ID
+	}
+	tagsByID, err := m.db.GetTagsForSessions(ids)
+	if err != nil {
+		return
+	}
+	for i := range m.allSessions {
+		m.allSessions[i].Tags = tagsByID[m.allSessions[i].ID]
 	}
 	m.applyFilters()
 }

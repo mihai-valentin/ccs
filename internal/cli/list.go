@@ -61,6 +61,15 @@ func newListCmd() *cobra.Command {
 				return nil
 			}
 
+			ids := make([]string, len(sessions))
+			for i, s := range sessions {
+				ids[i] = s.ID
+			}
+			tagsByID, err := d.GetTagsForSessions(ids)
+			if err != nil {
+				return fmt.Errorf("loading tags: %w", err)
+			}
+
 			w := newTabWriter()
 			fmt.Fprintln(w, "NAME\tPROJECT\tBRANCH\tMSGS\tUPDATED")
 			for _, s := range sessions {
@@ -70,7 +79,7 @@ func newListCmd() *cobra.Command {
 					branch = "-"
 				}
 				tagStr := ""
-				if sTags, err := d.GetSessionTags(s.ID); err == nil && len(sTags) > 0 {
+				if sTags := tagsByID[s.ID]; len(sTags) > 0 {
 					names := make([]string, len(sTags))
 					for i, t := range sTags {
 						names[i] = t.Name

@@ -243,6 +243,56 @@ func (d *DB) ListTags() ([]model.Tag, error) {
 	return tags, rows.Err()
 }
 
+// GetTagsForSessions returns a map of session ID to its tags for the given
+// IDs, in a small number of queries rather than one per session. Batches at
+// 500 IDs per query to stay under SQLITE_LIMIT_VARIABLE_NUMBER. Sessions with
+// no tags are omitted from the map.
+func (d *DB) GetTagsForSessions(ids []string) (map[string][]model.Tag, error) {
+	result := make(map[string][]model.Tag, len(ids))
+	if len(ids) == 0 {
+		return result, nil
+	}
+	const batch = 500
+	for start := 0; start < len(ids); start += batch {
+		end := start + batch
+		if end > len(ids) {
+			end = len(ids)
+		}
+		chunk := ids[start:end]
+		placeholders := make([]string, len(chunk))
+		args := make([]any, len(chunk))
+		for i, id := range chunk {
+			placeholders[i] = "?"
+			args[i] = id
+		}
+		query := fmt.Sprintf(`
+			SELECT st.session_id, t.id, t.name
+			FROM session_tags st
+			JOIN tags t ON t.id = st.tag_id
+			WHERE st.session_id IN (%s)
+			ORDER BY t.name`, strings.Join(placeholders, ","))
+		rows, err := d.Query(query, args...)
+		if err != nil {
+			return nil, err
+		}
+		for rows.Next() {
+			var sid string
+			var t model.Tag
+			if err := rows.Scan(&sid, &t.ID, &t.Name); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			result[sid] = append(result[sid], t)
+		}
+		if err := rows.Err(); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		rows.Close()
+	}
+	return result, nil
+}
+
 // GetSessionTags returns all tags for a given session.
 func (d *DB) GetSessionTags(sessionID string) ([]model.Tag, error) {
 	rows, err := d.Query(`
