@@ -3,8 +3,10 @@ package cli
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/mihai-valentin/ccs/internal/db"
 	"github.com/mihai-valentin/ccs/internal/model"
 	"github.com/spf13/cobra"
 )
@@ -37,7 +39,7 @@ func newListCmd() *cobra.Command {
 
 			if !all && project == "" {
 				// Default to current project directory name
-				if cwd, err := detectProjectDir(); err == nil && cwd != "" {
+				if cwd, err := resolveProjectDir(d); err == nil && cwd != "" {
 					f.ProjectDir = cwd
 				}
 			}
@@ -105,6 +107,38 @@ func detectProjectDir() (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return "", err
+	}
+	return strings.ReplaceAll(cwd, "/", "-"), nil
+}
+
+// resolveProjectDir returns the sanitized project name matching the deepest
+// ancestor of cwd that appears in the indexed projects. Falls back to the
+// sanitized cwd when no ancestor matches, so behavior is unchanged when run
+// from a project root.
+func resolveProjectDir(d *db.DB) (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	projects, err := d.ListProjects()
+	if err != nil {
+		return "", err
+	}
+	known := make(map[string]bool, len(projects))
+	for _, p := range projects {
+		known[p] = true
+	}
+	dir := cwd
+	for {
+		candidate := strings.ReplaceAll(dir, "/", "-")
+		if known[candidate] {
+			return candidate, nil
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
 	}
 	return strings.ReplaceAll(cwd, "/", "-"), nil
 }

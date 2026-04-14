@@ -61,7 +61,7 @@ func newSearchCmd() *cobra.Command {
 
 			// Filter by current project if not --all
 			if !all {
-				if projDir, err := detectProjectDir(); err == nil && projDir != "" {
+				if projDir, err := resolveProjectDir(d); err == nil && projDir != "" {
 					var filtered []model.Session
 					for _, s := range sessions {
 						if s.ProjectDir == projDir {

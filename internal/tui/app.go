@@ -455,6 +455,14 @@ func (m *Model) applyFilters() {
 				strings.Contains(strings.ToLower(s.FirstMessage), query) ||
 				strings.Contains(strings.ToLower(s.LastMessage), query)
 			if !match {
+				for _, t := range s.Tags {
+					if strings.Contains(strings.ToLower(t.Name), query) {
+						match = true
+						break
+					}
+				}
+			}
+			if !match {
 				continue
 			}
 		}

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.svg" alt="ccs mascot" width="140"/>
+</p>
+
 # ccs — Claude Code Session Manager
 
 [![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&logoColor=white)](https://go.dev)
@@ -141,6 +145,10 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 ## Built with AI
 
 This project was 100% generated using [Claude Code](https://claude.ai/claude-code) (Anthropic's CLI coding agent) and a custom multi-agent orchestration tool that parallelizes development tasks across isolated git worktrees. From design spec to implementation, bug fixes, and CI/CD pipeline — every line of code was written by AI agents.
+
+## Credits
+
+- ASCII squirrel shown on bare `ccs` invocation is by Erik Andersson, from [ascii.co.uk/art/squirrel](https://ascii.co.uk/art/squirrel).
 
 ## License
 

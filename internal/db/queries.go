@@ -173,7 +173,7 @@ func (d *DB) ListSessions(f model.SessionFilter) ([]model.Session, error) {
 	return scanSessions(rows)
 }
 
-// SearchSessions performs a text search across name, messages, cwd, and branch.
+// SearchSessions performs a text search across name, messages, cwd, branch, and tag names.
 func (d *DB) SearchSessions(query string) ([]model.Session, error) {
 	// Truncate to prevent unbounded LIKE patterns that could degrade performance.
 	const maxQueryLen = 500
@@ -182,14 +182,17 @@ func (d *DB) SearchSessions(query string) ([]model.Session, error) {
 	}
 	pattern := "%" + query + "%"
 	rows, err := d.Query(`
-		SELECT id, project_dir, cwd, git_branch, name, first_message, last_message,
-		       message_count, created_at, updated_at, file_size, file_mod_time, summary
-		FROM sessions
-		WHERE name LIKE ? OR first_message LIKE ? OR last_message LIKE ?
-		      OR cwd LIKE ? OR git_branch LIKE ?
-		ORDER BY updated_at DESC
+		SELECT DISTINCT s.id, s.project_dir, s.cwd, s.git_branch, s.name,
+		       s.first_message, s.last_message, s.message_count,
+		       s.created_at, s.updated_at, s.file_size, s.file_mod_time, s.summary
+		FROM sessions s
+		LEFT JOIN session_tags st ON st.session_id = s.id
+		LEFT JOIN tags t ON t.id = st.tag_id
+		WHERE s.name LIKE ? OR s.first_message LIKE ? OR s.last_message LIKE ?
+		      OR s.cwd LIKE ? OR s.git_branch LIKE ? OR t.name LIKE ?
+		ORDER BY s.updated_at DESC
 		LIMIT 50`,
-		pattern, pattern, pattern, pattern, pattern,
+		pattern, pattern, pattern, pattern, pattern, pattern,
 	)
 	if err != nil {
 		return nil, err
