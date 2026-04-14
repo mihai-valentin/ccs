@@ -1,6 +1,7 @@
 # Binary output
 bin/
 /ccs
+dist/
 
 # Go
 *.exe
