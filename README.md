@@ -12,8 +12,8 @@ A fast CLI tool for managing [Claude Code](https://claude.ai/claude-code) sessio
 
 ## Features
 
-- **List sessions** across all projects or filter by project/tag
-- **Smart search** across session names, messages, working directories, and git branches
+- **List sessions** — scoped to the current project by default, or `--all` to span every project
+- **Smart search** — across session names, messages, working directories, git branches, and tag names
 - **Tagging** — add custom labels to sessions for easy organization
 - **Per-project grouping** — see all sessions for a project at a glance
 - **Interactive TUI** — browse, filter, tag, and open sessions visually
@@ -58,11 +58,14 @@ ccs list -p nexus     # Filter by project (partial match)
 ccs list -n 50        # Show more results (default: 20)
 ```
 
+Both `list` and `search` default to the **current project**. The project is detected by walking up from your cwd and matching the deepest ancestor that appears in the index — so running the commands from a subdirectory (e.g. `internal/tui`) still returns the containing project's sessions. Use `--all` to drop the scope, or `-p <name>` to target a specific project.
+
 ### Search
 
 ```bash
-ccs search "auth middleware"   # Searches name, messages, cwd, branch
-ccs search "NEX-73" --all     # Search across all projects
+ccs search "auth middleware"   # Name, messages, cwd, branch, and tag names
+ccs search bugfix              # A tag name works as a query too
+ccs search "NEX-73" --all      # Search across all projects
 ```
 
 ### Show details

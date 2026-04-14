@@ -121,6 +121,10 @@ When opening a session, `ccs`:
 
 Session identifiers are resolved in order: exact UUID > UUID prefix (4+ chars) > exact name > fuzzy name match. Ambiguous matches prompt the user to pick.
 
+### Project Scoping (list & search)
+
+`ccs list` and `ccs search` default to the current project. The project is detected by `resolveProjectDir` (in `internal/cli/list.go`): it walks up from `os.Getwd()` testing each ancestor's sanitized name (`/` → `-`) against the set of indexed `project_dir` values, and returns the deepest match. This lets users run the commands from any subdirectory of a project. `--all` skips the filter; `-p <name>` targets a specific project. Search (both CLI `search` and the TUI `/` filter) also matches against tag names.
+
 ## Verification (for CI / automated agents)
 
 ```bash
