@@ -36,7 +36,6 @@ Thumbs.db
 
 .agent-orch/
 
-# Shawarma import metadata (contains local paths)
-.shawarma-import.json
 docs/
 idea.md
+.claude/
