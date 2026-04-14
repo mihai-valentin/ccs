@@ -10,10 +10,10 @@ import (
 
 // SessionFile represents a discovered JSONL session file on disk.
 type SessionFile struct {
-	Path       string
-	ProjectDir string
-	SessionID  string
-	FileSize   int64
+	Path        string
+	ProjectDir  string
+	SessionID   string
+	FileSize    int64
 	FileModTime time.Time
 }
 

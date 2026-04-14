@@ -1,0 +1,15 @@
+# Normalize line endings so WSL/Windows/macOS produce identical diffs.
+* text=auto eol=lf
+
+# Force LF for tooling that's line-ending sensitive.
+*.go     text eol=lf
+go.mod   text eol=lf
+go.sum   text eol=lf
+*.sh     text eol=lf
+Makefile text eol=lf
+
+# Binary types — don't touch.
+*.png  binary
+*.jpg  binary
+*.gif  binary
+*.ico  binary

@@ -168,4 +168,3 @@ func scanResolveRows(rows interface {
 	}
 	return sessions, rows.Err()
 }
-

@@ -27,15 +27,15 @@ func seedSession(t *testing.T, d *db.DB, id, name, cwd string) {
 	t.Helper()
 	now := time.Now()
 	s := &model.Session{
-		ID:          id,
-		ProjectDir:  "/projects/test",
-		Cwd:         cwd,
-		Name:        name,
+		ID:           id,
+		ProjectDir:   "/projects/test",
+		Cwd:          cwd,
+		Name:         name,
 		MessageCount: 1,
-		CreatedAt:   now,
-		UpdatedAt:   now,
-		FileSize:    100,
-		FileModTime: now,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+		FileSize:     100,
+		FileModTime:  now,
 	}
 	if err := d.UpsertSession(s); err != nil {
 		t.Fatalf("seed session %s: %v", id, err)

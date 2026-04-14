@@ -40,9 +40,9 @@ type Model struct {
 	scrollOffset  int // top visible row index
 
 	// Filters
-	searchQuery    string
-	projectFilter  string // "" means "All"
-	projectIndex   int    // index into projects list; 0 = All
+	searchQuery   string
+	projectFilter string // "" means "All"
+	projectIndex  int    // index into projects list; 0 = All
 
 	// UI state
 	mode       Mode

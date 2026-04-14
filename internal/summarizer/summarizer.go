@@ -148,4 +148,3 @@ func buildPrompt(messages []message) string {
 	sb.WriteString("Summary:")
 	return sb.String()
 }
-

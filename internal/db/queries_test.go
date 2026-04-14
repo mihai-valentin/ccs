@@ -24,14 +24,14 @@ func insertTestSession(t *testing.T, d *DB, id string) {
 	t.Helper()
 	now := time.Now()
 	s := &model.Session{
-		ID:          id,
-		ProjectDir:  "test-project",
-		Cwd:         "/tmp/test",
+		ID:           id,
+		ProjectDir:   "test-project",
+		Cwd:          "/tmp/test",
 		MessageCount: 1,
-		CreatedAt:   now,
-		UpdatedAt:   now,
-		FileSize:    100,
-		FileModTime: now,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+		FileSize:     100,
+		FileModTime:  now,
 	}
 	if err := d.UpsertSession(s); err != nil {
 		t.Fatalf("insert test session %s: %v", id, err)

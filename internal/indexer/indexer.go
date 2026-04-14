@@ -10,7 +10,7 @@ import (
 
 // Indexer scans for Claude Code session files and syncs metadata into the database.
 type Indexer struct {
-	db       *db.DB
+	db        *db.DB
 	claudeDir string
 }
 
