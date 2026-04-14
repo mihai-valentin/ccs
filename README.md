@@ -22,6 +22,27 @@ A fast CLI tool for managing [Claude Code](https://claude.ai/claude-code) sessio
 
 ## Install
 
+### Download a prebuilt release
+
+Prebuilt binaries for Linux and macOS (amd64 + arm64) are published on every tagged release. No Go toolchain required.
+
+1. Grab the archive for your platform from the [latest release](https://github.com/mihai-valentin/ccs/releases/latest) — e.g. `ccs_<version>_linux_amd64.tar.gz`.
+2. Extract it and move the binary somewhere on your PATH:
+
+   ```bash
+   tar -xzf ccs_*_linux_amd64.tar.gz
+   sudo install -m 0755 ccs /usr/local/bin/ccs
+   # or, no sudo: install -m 0755 ccs ~/.local/bin/ccs
+   ```
+
+3. Verify:
+
+   ```bash
+   ccs --help
+   ```
+
+Each release also ships a `checksums.txt` so you can verify the archive with `sha256sum -c checksums.txt`. Pin a specific version by downloading its tagged release instead of `latest`.
+
 ### From source
 
 Requires [Go 1.22+](https://go.dev/dl/).
@@ -31,20 +52,28 @@ Requires [Go 1.22+](https://go.dev/dl/).
 git clone https://github.com/mihai-valentin/ccs.git
 cd ccs
 
-# Build the binary
-make build        # Output: ./bin/ccs
+# Build the binary (output: ./bin/ccs)
+make build
 
-# Or install directly to your GOPATH
-make install      # Installs to ~/go/bin/ccs
+# Install system-wide to /usr/local/bin (usually needs sudo)
+sudo make install
+
+# Or install for the current user to ~/.local/bin (no sudo, assumes ~/.local/bin is on PATH)
+make install-user
+
+# Or install to a custom prefix
+PREFIX=$HOME/opt make install   # → $HOME/opt/bin/ccs
+
+# Uninstall (mirror the install flags you used)
+sudo make uninstall
 ```
 
 ### Manual build (without Make)
 
 ```bash
 go build -o bin/ccs ./cmd/ccs/
+sudo install -m 0755 bin/ccs /usr/local/bin/ccs
 ```
-
-Make sure `~/go/bin` (or your `GOPATH/bin`) is in your `PATH`.
 
 ## Usage
 
@@ -97,6 +126,21 @@ ccs tags                             # List all tags with counts
 ```bash
 ccs projects                         # List all projects with session counts
 ```
+
+### AI summaries (optional)
+
+`ccs summarize` generates a one-line summary of a session's conversation using a local [Ollama](https://ollama.com) instance. This is **entirely optional** — every other command works without it, and sessions without summaries simply render with an empty summary field.
+
+```bash
+ccs summarize <name-or-id>           # Summarize one session
+ccs summarize --all                  # Summarize every session missing a summary
+ccs summarize <id> --force           # Regenerate an existing summary
+ccs summarize <id> --model llama3.2  # Use a different model
+```
+
+**Requirements:** a running Ollama server reachable at `http://localhost:11434` with a model pulled locally. Defaults: `gemma3:4b`. Override with `--ollama-url` and `--model`.
+
+If Ollama isn't running, `ccs summarize` fails fast with a clear error (`cannot reach Ollama at ...`). All other `ccs` commands are unaffected.
 
 ### Interactive TUI
 
