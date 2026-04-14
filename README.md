@@ -148,6 +148,10 @@ If Ollama isn't running, `ccs summarize` fails fast with a clear error (`cannot 
 ccs ui
 ```
 
+<p align="center">
+  <img src="assets/tui_screenshot.png" alt="ccs TUI screenshot" width="720"/>
+</p>
+
 Key bindings:
 - `↑/↓` or `j/k` — navigate
 - `Enter` — open session
